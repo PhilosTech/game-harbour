@@ -1,0 +1,38 @@
+---
+description: Game Harbour - full stack, host bridge, i18n, mobile players
+alwaysApply: true
+---
+
+# Game Harbour
+
+Read `docs/PROJECT_PLAN.md` before large changes.
+
+## Product
+
+- Brand: **Game Harbour** (British English). Never use American "Harbor" or "GameHubber".
+- **Master Bridge** (`/[locale]/bridge`) - auth required, professional host only: game library, create/edit games, run sessions
+- **Player** (`/[locale]/play/[code]`) - mobile-first, no auth
+- First system game: **El Dorado** (`docs/games/el-dorado.md`) - realistic Amazon treasure hunt, no supernatural
+- **i18n**: `next-intl`, locales `ru` (default) and `en` (British English copy in `messages/en.json`); never hardcode user-facing strings
+
+## Stack
+
+- Next.js App Router + API routes
+- PostgreSQL + Prisma - game templates, sessions, hosts
+- S3-compatible storage (MinIO dev, R2 prod) for images
+- Auth.js - hosts only; username + password (no email/SMTP)
+- Realtime: Socket.io (`realtime/server.ts` locally, Render in prod); typed `RoomEvent`
+
+## Code
+
+- Follow `architecture.mdc`: SOLID, DRY, YAGNI, KISS; UI and business logic in separate files
+- TypeScript strict, no `any`
+- Tailwind mobile-first for `components/player/`
+- User strings in `messages/{locale}.json` or DB i18n fields
+- Dice/room logic in `src/session-engine/`; DB/auth in `src/server/`; never in components
+- Uploads go through `lib/storage.ts`, never commit binary assets to git
+
+## Scope
+
+- Minimal diff; grounded realism in default game content
+- Do not add frontend-only workarounds that skip DB when persistence is required

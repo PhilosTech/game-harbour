@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE "GameTemplate" ADD COLUMN "defaultStrengthValue" INTEGER NOT NULL DEFAULT 35;
+ALTER TABLE "GameTemplate" ADD COLUMN "defaultWeaknessValue" INTEGER NOT NULL DEFAULT 8;
+
+-- AlterTable
+ALTER TABLE "GameHeroSlot" ADD COLUMN "strengthTraitRu" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "GameHeroSlot" ADD COLUMN "strengthTraitEn" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "GameHeroSlot" ADD COLUMN "strengthValue" INTEGER NOT NULL DEFAULT 35;
+ALTER TABLE "GameHeroSlot" ADD COLUMN "weaknessTraitRu" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "GameHeroSlot" ADD COLUMN "weaknessTraitEn" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "GameHeroSlot" ADD COLUMN "weaknessValue" INTEGER NOT NULL DEFAULT 8;

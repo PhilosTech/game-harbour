@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: game-harbour-realtime
+    runtime: node
+    plan: free
+    buildCommand: npm install && npx prisma generate
+    startCommand: npx tsx realtime/server.ts
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: REALTIME_PORT
+        value: 10000

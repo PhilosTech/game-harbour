@@ -1,0 +1,60 @@
+---
+description: SOLID, DRY, YAGNI, KISS and strict layer separation
+alwaysApply: true
+---
+
+# Architecture principles
+
+Follow **SOLID**, **DRY**, **YAGNI**, **KISS**. Code must be easy to review file-by-file.
+
+## Layer map (never mix)
+
+| Layer | Path | Responsibility |
+|-------|------|----------------|
+| UI | `src/components/**`, `src/app/**/page.tsx` | Render, events, local UI state only |
+| Hooks | `src/hooks/**` | Wire UI to data; no Prisma, no raw SQL |
+| Server services | `src/server/**` | Business rules, orchestration, auth checks |
+| Domain engine | `src/session-engine/**` | Pure functions: dice, room reducers, validators |
+| Data access | `src/server/**` or `src/lib/db.ts` | Prisma queries only; no JSX |
+| API | `src/app/api/**` | HTTP boundary: parse input, call service, return DTO |
+| Infra | `src/lib/**` | db, storage, auth config |
+
+**Forbidden in React components:** Prisma calls, `db.`, business rules, dice math, role/permission checks.
+
+**Forbidden in `session-engine/`:** React imports, hooks, fetch, Prisma.
+
+## SOLID (practical)
+
+- **S** - One file, one reason to change. Split when UI + logic grow together.
+- **O** - Extend via new scene types / services, not `if` chains in components.
+- **L** - Shared interfaces in `src/types/`; mocks match production shapes.
+- **I** - Small props and service methods; no god objects.
+- **D** - UI depends on hooks/services, not Prisma or S3 clients directly.
+
+## DRY
+
+- Extract duplication on the **third** repeat, not the first.
+- Shared logic -> `session-engine/` or `server/`, never copy-paste across components.
+- Shared UI -> `components/shared/`; shared types -> `src/types/`.
+
+## YAGNI
+
+- No abstractions for one use case (generic "GameEngineFactory" with one game).
+- No extra env flags, feature toggles, or plugins until requested.
+- Ship the minimal path; delete dead code in the same PR.
+
+## KISS
+
+- Prefer flat folders and readable names over clever patterns.
+- Prefer server service + hook over Redux/global store unless justified.
+
+## File size guide
+
+- Components: aim **< 150 lines**; split layout vs content.
+- Services: one domain per file (`games.ts`, `sessions.ts`).
+- Pages: thin - fetch via server service, pass data to components.
+
+## Review-friendly PRs
+
+- One concern per PR (e.g. "session join API" not "refactor + new feature").
+- New feature = types -> engine/service -> API -> hook -> UI (in that order when possible).

@@ -1,0 +1,61 @@
+---
+description: Session engine, bridge editor, player UI, API
+globs: src/**/*
+alwaysApply: false
+---
+
+# Session and games
+
+See `architecture.mdc` for SOLID / DRY / YAGNI / KISS.
+
+## Layers (strict)
+
+```
+page.tsx / components  ->  hooks  ->  server/*  ->  prisma
+                              \->  session-engine/* (pure, no I/O)
+```
+
+- `src/session-engine/` - dice, room events, validators (pure TS, unit tested)
+- `src/server/` - business logic + Prisma; returns typed DTOs, not raw Prisma models to UI
+- `src/hooks/` - data fetching glue for client components
+- `src/components/bridge/` - host UI only
+- `src/components/player/` - mobile-first player UI only
+- `src/app/api/` - thin handlers: validate -> service -> JSON
+
+## Anti-patterns (reject in review)
+
+```tsx
+// BAD - logic in component
+export function RollButton() {
+  const result = Math.floor(Math.random() * 20) + 1;
+  await db.sessionEvent.create({ ... });
+}
+
+// GOOD
+import { rollD20 } from '@/session-engine/dice';
+import { useRequestRoll } from '@/hooks/use-request-roll';
+```
+
+- No `prisma` import in `components/` or `hooks/` that only serve UI
+- No 300-line "god components"; extract `*-view.tsx` + `use-*.ts`
+
+## Game content
+
+- Stored in PostgreSQL (`GameTemplate`, scenes), not hardcoded in React
+- Seed `el-dorado` via migration or seed script
+- `titleRu`/`titleEn`, `contentRu`/`contentEn` on scenes
+
+## Host editor
+
+- CRUD game metadata, acts/scenes, image upload to S3
+- `hostOnlyNotes` never exposed to player API or websocket payloads
+
+## Player API
+
+- Read-only session state for players; no host fields
+- Touch targets 44px+, `env(safe-area-inset-*)` on full-height layouts
+
+## Realtime
+
+- Events match `RoomEvent` union in session-engine
+- Validate on server before broadcast and DB insert

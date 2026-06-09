@@ -1,0 +1,252 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  HOST
+  ADMIN
+}
+
+enum GameStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum GameVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum SessionPhase {
+  LOBBY
+  ACTIVE
+  ENDED
+}
+
+enum SceneType {
+  STORY
+  CHECK
+  NOTE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  displayName  String?
+  passwordHash String
+  role         UserRole @default(HOST)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  accounts     Account[]
+  sessions     Session[]
+  games        GameTemplate[]
+  liveSessions LiveSession[]
+  mediaAssets  MediaAsset[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model GameTemplate {
+  id            String     @id @default(cuid())
+  slug          String     @unique
+  hostId        String?
+  coverUrl      String?
+  titleRu       String
+  titleEn       String
+  descriptionRu String     @db.Text
+  descriptionEn String     @db.Text
+  status        GameStatus     @default(DRAFT)
+  visibility         GameVisibility @default(PRIVATE)
+  traitPointsPerStat     Int @default(30)
+  defaultStrengthValue   Int @default(35)
+  defaultWeaknessValue   Int @default(8)
+  createdAt              DateTime @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  host         User?          @relation(fields: [hostId], references: [id], onDelete: SetNull)
+  heroSlots    GameHeroSlot[]
+  traits       GameTrait[]
+  scenes       GameScene[]
+  liveSessions LiveSession[]
+}
+
+model GameHeroSlot {
+  id               String   @id @default(cuid())
+  gameId           String
+  order            Int
+  labelRu          String
+  labelEn          String
+  strengthTraitRu  String
+  strengthTraitEn  String
+  strengthValue    Int      @default(35)
+  weaknessTraitRu  String
+  weaknessTraitEn  String
+  weaknessValue    Int      @default(8)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  game           GameTemplate    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  sessionPlayers SessionPlayer[]
+
+  @@index([gameId, order])
+}
+
+model GameTrait {
+  id        String   @id @default(cuid())
+  gameId    String
+  order     Int
+  labelRu   String
+  labelEn   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  game GameTemplate @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId, order])
+}
+
+model GameScene {
+  id             String    @id @default(cuid())
+  gameId         String
+  order          Int
+  sceneKey       String
+  type           SceneType @default(STORY)
+  contentRu      String    @db.Text
+  contentEn      String    @db.Text
+  hostOnlyNotes  String?   @db.Text
+  playerTaskRu   String?   @db.Text
+  playerTaskEn   String?   @db.Text
+  imageUrl       String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  game           GameTemplate           @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  tasks          GameSceneTask[]
+  illustrations  GameSceneIllustration[]
+
+  @@unique([gameId, sceneKey])
+  @@index([gameId, order])
+}
+
+model GameSceneTask {
+  id        String   @id @default(cuid())
+  sceneId   String
+  order     Int
+  textRu    String   @db.Text
+  textEn    String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  scene GameScene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  @@index([sceneId, order])
+}
+
+model GameSceneIllustration {
+  id        String   @id @default(cuid())
+  sceneId   String
+  order     Int
+  imageUrl  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  scene GameScene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  @@index([sceneId, order])
+}
+
+model LiveSession {
+  id        String       @id @default(cuid())
+  gameId    String
+  hostId    String
+  roomCode  String       @unique
+  phase     SessionPhase @default(LOBBY)
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  game    GameTemplate    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  host    User            @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  players SessionPlayer[]
+  events  SessionEvent[]
+}
+
+model SessionPlayer {
+  id              String   @id @default(cuid())
+  sessionId       String
+  displayName     String
+  displayNameKey  String
+  heroSlotId      String?
+  characterJson   Json?
+  joinedAt        DateTime @default(now())
+
+  session  LiveSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  heroSlot GameHeroSlot? @relation(fields: [heroSlotId], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, displayNameKey])
+  @@unique([sessionId, heroSlotId])
+  @@index([sessionId])
+}
+
+model SessionEvent {
+  id        String   @id @default(cuid())
+  sessionId String
+  type      String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  session LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+}
+
+model MediaAsset {
+  id          String   @id @default(cuid())
+  hostId      String
+  storageKey  String   @unique
+  mimeType    String
+  sizeBytes   Int
+  createdAt   DateTime @default(now())
+
+  host User @relation(fields: [hostId], references: [id], onDelete: Cascade)
+}
