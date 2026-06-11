@@ -207,6 +207,7 @@
     "imageUploadTooLarge": "File is larger than 5 MB.",
     "imageUploadFailed": "Could not upload file.",
     "imageUploadUnavailable": "Upload is unavailable. Check server storage settings.",
+    "imageUploadCredentials": "R2 rejected the credentials. Check S3_ENDPOINT, access key, secret, and token permissions (Object Read & Write).",
     "sceneTasks": "Player tasks",
     "addSceneTask": "Add task",
     "removeSceneTask": "Remove",

@@ -207,6 +207,7 @@
     "imageUploadTooLarge": "Файл больше 5 МБ.",
     "imageUploadFailed": "Не удалось загрузить файл.",
     "imageUploadUnavailable": "Загрузка недоступна. Проверьте настройки хранилища на сервере.",
+    "imageUploadCredentials": "R2 отклонил ключи. Проверьте S3_ENDPOINT, access key, secret и права токена (Object Read & Write).",
     "sceneTasks": "Задания игрокам",
     "addSceneTask": "Добавить задание",
     "removeSceneTask": "Удалить",

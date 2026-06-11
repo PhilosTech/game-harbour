@@ -86,6 +86,8 @@ export function ImageUploadField({
         const data = (await uploadResponse.json()) as { code?: string; error?: string };
         if (data.code === 'STORAGE_UNAVAILABLE') {
           setError(t('imageUploadUnavailable'));
+        } else if (data.code === 'STORAGE_CREDENTIALS') {
+          setError(t('imageUploadCredentials'));
         } else {
           setError(data.error ?? t('imageUploadFailed'));
         }

@@ -1,4 +1,5 @@
 import {
+  HeadBucketCommand,
   PutObjectCommand,
   S3Client,
   type S3ClientConfig,
@@ -37,7 +38,78 @@ function normalizeS3Endpoint(endpoint: string, bucket: string): string {
 }
 
 function sanitizeEnv(value: string | undefined): string {
-  return (value ?? '').trim().replace(/^["']|["']$/g, '');
+  return (value ?? '')
+    .trim()
+    .replace(/^["']|["']$/g, '')
+    .replace(/\r/g, '');
+}
+
+function validateStorageEndpoint(endpoint: string, publicUrl: string | undefined): void {
+  const lower = endpoint.toLowerCase();
+
+  if (lower.includes('.r2.dev') || lower.includes('pub-')) {
+    throw new StorageConfigError(
+      'S3_ENDPOINT must be the R2 API host (https://<ACCOUNT_ID>.r2.cloudflarestorage.com), not the public bucket URL (S3_PUBLIC_URL)',
+    );
+  }
+
+  if (publicUrl && endpoint.replace(/\/$/, '') === publicUrl.replace(/\/$/, '')) {
+    throw new StorageConfigError(
+      'S3_ENDPOINT and S3_PUBLIC_URL must differ: endpoint is for API calls, public URL is for browser access',
+    );
+  }
+
+  if (isR2Endpoint(endpoint)) {
+    try {
+      const host = new URL(endpoint).hostname;
+      if (!host.endsWith('.r2.cloudflarestorage.com')) {
+        throw new StorageConfigError('S3_ENDPOINT host must end with .r2.cloudflarestorage.com');
+      }
+    } catch {
+      throw new StorageConfigError('S3_ENDPOINT must be a valid URL');
+    }
+  }
+}
+
+export type StorageDiagnostics = {
+  endpointHost: string;
+  bucket: string;
+  region: string;
+  isR2: boolean;
+  warnings: string[];
+};
+
+export function getStorageDiagnostics(): StorageDiagnostics {
+  const endpoint = sanitizeEnv(process.env.S3_ENDPOINT);
+  const bucket = sanitizeEnv(process.env.S3_BUCKET);
+  const publicUrl = sanitizeEnv(process.env.S3_PUBLIC_URL);
+  const warnings: string[] = [];
+
+  let endpointHost = '';
+  try {
+    endpointHost = endpoint ? new URL(endpoint).hostname : '';
+  } catch {
+    warnings.push('S3_ENDPOINT is not a valid URL');
+  }
+
+  const isR2 = isR2Endpoint(endpoint);
+  const region = isR2 ? 'auto' : sanitizeEnv(process.env.S3_REGION) || 'us-east-1';
+
+  if (!endpoint) {
+    warnings.push('S3_ENDPOINT is missing');
+  } else if (!isR2 && publicUrl && publicUrl.includes('r2.dev')) {
+    warnings.push('S3_PUBLIC_URL looks like R2 but S3_ENDPOINT is not an r2.cloudflarestorage.com host');
+  }
+
+  if (!bucket) {
+    warnings.push('S3_BUCKET is missing');
+  }
+
+  if (!sanitizeEnv(process.env.S3_ACCESS_KEY_ID) || !sanitizeEnv(process.env.S3_SECRET_ACCESS_KEY)) {
+    warnings.push('S3 credentials are missing');
+  }
+
+  return { endpointHost, bucket, region, isR2, warnings };
 }
 
 function assertStorageEnv(): {
@@ -61,6 +133,8 @@ function assertStorageEnv(): {
   if (!accessKeyId || !secretAccessKey) {
     throw new StorageConfigError('S3 credentials are not configured');
   }
+
+  validateStorageEndpoint(endpoint, sanitizeEnv(process.env.S3_PUBLIC_URL));
 
   // R2 always requires region "auto"; us-east-1 breaks signing.
   const region = isR2Endpoint(endpoint)
@@ -101,8 +175,17 @@ export function mapStorageUploadError(
     if (awsCode === 'AccessDenied' || awsCode === 'Forbidden') {
       return { code: 'STORAGE_ACCESS_DENIED', message: 'Storage access denied', awsCode };
     }
-    if (awsCode === 'InvalidAccessKeyId' || awsCode === 'SignatureDoesNotMatch') {
-      return { code: 'STORAGE_CREDENTIALS', message: 'Storage credentials are invalid', awsCode };
+    if (
+      awsCode === 'Unauthorized' ||
+      awsCode === 'InvalidAccessKeyId' ||
+      awsCode === 'SignatureDoesNotMatch'
+    ) {
+      return {
+        code: 'STORAGE_CREDENTIALS',
+        message:
+          'R2 rejected credentials. Check S3_ENDPOINT (account API host), access key, secret, and token permissions (Object Read & Write).',
+        awsCode,
+      };
     }
     if (awsCode === 'NoSuchBucket') {
       return { code: 'STORAGE_BUCKET_NOT_FOUND', message: 'Storage bucket not found', awsCode };
@@ -141,6 +224,30 @@ export function getPublicAssetUrl(storageKey: string): string {
     return storageKey;
   }
   return `${base}/${storageKey}`;
+}
+
+export async function probeStorageAccess(): Promise<
+  { ok: true } | { ok: false; error: string; code: string; awsCode?: string }
+> {
+  try {
+    const { bucket } = assertStorageEnv();
+    const client = getS3Client();
+    await client.send(new HeadBucketCommand({ Bucket: bucket }));
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof StorageConfigError) {
+      return { ok: false, code: 'STORAGE_UNAVAILABLE', error: error.message };
+    }
+    const mapped = mapStorageUploadError(error);
+    if (mapped) {
+      return { ok: false, code: mapped.code, error: mapped.message, awsCode: mapped.awsCode };
+    }
+    return {
+      ok: false,
+      code: 'STORAGE_ERROR',
+      error: formatStorageErrorForLog(error),
+    };
+  }
 }
 
 export async function uploadObject(
