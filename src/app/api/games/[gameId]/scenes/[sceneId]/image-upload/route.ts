@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
-import { createUploadUrl, getPublicAssetUrl } from '@/lib/storage';
+import { createUploadUrl, getPublicAssetUrl, StorageConfigError } from '@/lib/storage';
 import { assertGameIsEditable, GameError } from '@/server/games';
 import { db } from '@/lib/db';
 
@@ -80,9 +80,16 @@ export async function POST(request: Request, context: RouteContext) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid payload', code: 'INVALID_PAYLOAD' }, { status: 400 });
     }
-    if (error instanceof Error && error.message.includes('S3')) {
-      return NextResponse.json({ error: 'Storage is not configured', code: 'STORAGE_UNAVAILABLE' }, { status: 503 });
+    if (error instanceof StorageConfigError) {
+      console.error('[image-upload] storage config:', error.message);
+      return NextResponse.json(
+        { error: 'Storage is not configured', code: 'STORAGE_UNAVAILABLE' },
+        { status: 503 },
+      );
     }
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    if (error instanceof Error) {
+      console.error('[image-upload]', error.message);
+    }
+    return NextResponse.json({ error: 'Internal error', code: 'STORAGE_ERROR' }, { status: 500 });
   }
 }
