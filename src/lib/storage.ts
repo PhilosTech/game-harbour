@@ -27,6 +27,10 @@ function normalizeS3Endpoint(endpoint: string, bucket: string): string {
   return trimmed;
 }
 
+function sanitizeEnv(value: string | undefined): string {
+  return (value ?? '').trim().replace(/^["']|["']$/g, '');
+}
+
 function assertStorageEnv(): {
   endpoint: string;
   region: string;
@@ -34,10 +38,10 @@ function assertStorageEnv(): {
   accessKeyId: string;
   secretAccessKey: string;
 } {
-  const endpoint = process.env.S3_ENDPOINT?.trim();
-  const bucket = process.env.S3_BUCKET?.trim();
-  const accessKeyId = process.env.S3_ACCESS_KEY_ID?.trim();
-  const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY?.trim();
+  const endpoint = sanitizeEnv(process.env.S3_ENDPOINT);
+  const bucket = sanitizeEnv(process.env.S3_BUCKET);
+  const accessKeyId = sanitizeEnv(process.env.S3_ACCESS_KEY_ID);
+  const secretAccessKey = sanitizeEnv(process.env.S3_SECRET_ACCESS_KEY);
 
   if (!endpoint) {
     throw new StorageConfigError('S3_ENDPOINT is not configured');
@@ -49,7 +53,10 @@ function assertStorageEnv(): {
     throw new StorageConfigError('S3 credentials are not configured');
   }
 
-  const region = process.env.S3_REGION?.trim() || (isR2Endpoint(endpoint) ? 'auto' : 'us-east-1');
+  // R2 always requires region "auto"; us-east-1 breaks signing.
+  const region = isR2Endpoint(endpoint)
+    ? 'auto'
+    : sanitizeEnv(process.env.S3_REGION) || 'us-east-1';
 
   return { endpoint, region, bucket, accessKeyId, secretAccessKey };
 }
@@ -62,12 +69,33 @@ function getS3Client() {
   return new S3Client({
     region,
     endpoint: normalizedEndpoint,
-    forcePathStyle: isLocalMinio || isR2Endpoint(normalizedEndpoint),
+    forcePathStyle: isLocalMinio,
+    requestChecksumCalculation: 'DISABLED',
+    responseChecksumValidation: 'DISABLED',
     credentials: {
       accessKeyId,
       secretAccessKey,
     },
   });
+}
+
+export function mapStorageUploadError(error: unknown): { code: string; message: string } | null {
+  if (!(error instanceof Error)) {
+    return null;
+  }
+
+  const name = error.name;
+  if (name === 'AccessDenied' || name === 'Forbidden') {
+    return { code: 'STORAGE_ACCESS_DENIED', message: 'Storage access denied' };
+  }
+  if (name === 'InvalidAccessKeyId' || name === 'SignatureDoesNotMatch') {
+    return { code: 'STORAGE_CREDENTIALS', message: 'Storage credentials are invalid' };
+  }
+  if (name === 'NoSuchBucket') {
+    return { code: 'STORAGE_BUCKET_NOT_FOUND', message: 'Storage bucket not found' };
+  }
+
+  return null;
 }
 
 export function getPublicAssetUrl(storageKey: string): string {

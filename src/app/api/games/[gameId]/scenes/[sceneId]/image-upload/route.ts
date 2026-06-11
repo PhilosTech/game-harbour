@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
-import { getPublicAssetUrl, StorageConfigError, uploadObject } from '@/lib/storage';
+import {
+  getPublicAssetUrl,
+  mapStorageUploadError,
+  StorageConfigError,
+  uploadObject,
+} from '@/lib/storage';
 import { assertGameIsEditable, GameError } from '@/server/games';
 import { db } from '@/lib/db';
 
@@ -105,8 +110,16 @@ export async function POST(request: Request, context: RouteContext) {
         { status: 503 },
       );
     }
+    const storageError = mapStorageUploadError(error);
+    if (storageError) {
+      console.error('[image-upload]', storageError.code, error);
+      return NextResponse.json(
+        { error: storageError.message, code: storageError.code },
+        { status: 503 },
+      );
+    }
     if (error instanceof Error) {
-      console.error('[image-upload]', error.message);
+      console.error('[image-upload]', error.name, error.message);
     }
     return NextResponse.json({ error: 'Internal error', code: 'STORAGE_ERROR' }, { status: 500 });
   }
