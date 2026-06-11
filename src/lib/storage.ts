@@ -1,9 +1,4 @@
-import {
-  PutObjectCommand,
-  S3Client,
-  type PutObjectCommandInput,
-} from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 export class StorageConfigError extends Error {
   constructor(message: string) {
@@ -16,7 +11,7 @@ function isR2Endpoint(endpoint: string): boolean {
   return endpoint.includes('r2.cloudflarestorage.com');
 }
 
-/** R2 presign must use the account endpoint, not bucket.account. */
+/** R2 API calls should use the account endpoint, not bucket.account. */
 function normalizeS3Endpoint(endpoint: string, bucket: string): string {
   if (!isR2Endpoint(endpoint)) {
     return endpoint.replace(/\/$/, '');
@@ -25,7 +20,7 @@ function normalizeS3Endpoint(endpoint: string, bucket: string): string {
   const trimmed = endpoint.replace(/\/$/, '');
   const bucketHostPrefix = `${bucket}.`;
 
-  if (trimmed.includes(`${bucketHostPrefix}`) && trimmed.includes('r2.cloudflarestorage.com')) {
+  if (trimmed.includes(bucketHostPrefix) && trimmed.includes('r2.cloudflarestorage.com')) {
     return trimmed.replace(bucketHostPrefix, '');
   }
 
@@ -67,10 +62,7 @@ function getS3Client() {
   return new S3Client({
     region,
     endpoint: normalizedEndpoint,
-    forcePathStyle: isLocalMinio,
-    // Browser PUT cannot send SDK checksum headers; omit them from presigned URLs.
-    requestChecksumCalculation: 'WHEN_REQUIRED',
-    responseChecksumValidation: 'WHEN_REQUIRED',
+    forcePathStyle: isLocalMinio || isR2Endpoint(normalizedEndpoint),
     credentials: {
       accessKeyId,
       secretAccessKey,
@@ -86,19 +78,20 @@ export function getPublicAssetUrl(storageKey: string): string {
   return `${base}/${storageKey}`;
 }
 
-export async function createUploadUrl(
+export async function uploadObject(
   storageKey: string,
   contentType: string,
-  expiresInSeconds = 300,
-): Promise<string> {
+  body: Uint8Array,
+): Promise<void> {
   const { bucket } = assertStorageEnv();
+  const client = getS3Client();
 
-  const commandInput: PutObjectCommandInput = {
-    Bucket: bucket,
-    Key: storageKey,
-    ContentType: contentType,
-  };
-
-  const command = new PutObjectCommand(commandInput);
-  return getSignedUrl(getS3Client(), command, { expiresIn: expiresInSeconds });
+  await client.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: storageKey,
+      ContentType: contentType,
+      Body: body,
+    }),
+  );
 }

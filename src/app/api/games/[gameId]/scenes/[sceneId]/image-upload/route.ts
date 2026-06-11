@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
-import { createUploadUrl, getPublicAssetUrl, StorageConfigError } from '@/lib/storage';
+import { getPublicAssetUrl, StorageConfigError, uploadObject } from '@/lib/storage';
 import { assertGameIsEditable, GameError } from '@/server/games';
 import { db } from '@/lib/db';
 
-const bodySchema = z.object({
-  contentType: z.enum(['image/jpeg', 'image/png', 'image/webp']),
-  kind: z.enum(['background', 'illustration']),
-  assetId: z.string().min(1).max(80).optional(),
-});
+const MAX_FILE_BYTES = 4 * 1024 * 1024;
+
+const allowedContentTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+const kindSchema = z.enum(['background', 'illustration']);
 
 const extensionByContentType: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -47,7 +47,28 @@ export async function POST(request: Request, context: RouteContext) {
 
   try {
     const { gameId, sceneId } = await context.params;
-    const body = bodySchema.parse(await request.json());
+    const formData = await request.formData();
+    const file = formData.get('file');
+    const kind = kindSchema.parse(String(formData.get('kind') ?? ''));
+    const assetIdRaw = formData.get('assetId');
+    const assetId =
+      typeof assetIdRaw === 'string' && assetIdRaw.trim() ? assetIdRaw.trim() : undefined;
+
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: 'File is required', code: 'INVALID_PAYLOAD' }, { status: 400 });
+    }
+
+    if (!allowedContentTypes.has(file.type)) {
+      return NextResponse.json({ error: 'Invalid file type', code: 'INVALID_PAYLOAD' }, { status: 400 });
+    }
+
+    if (file.size > MAX_FILE_BYTES) {
+      return NextResponse.json({ error: 'File too large', code: 'FILE_TOO_LARGE' }, { status: 400 });
+    }
+
+    if (kind === 'illustration' && !assetId) {
+      return NextResponse.json({ error: 'assetId is required', code: 'INVALID_PAYLOAD' }, { status: 400 });
+    }
 
     await assertGameIsEditable(session.user.id, gameId);
 
@@ -60,18 +81,15 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Scene not found', code: 'NOT_FOUND' }, { status: 404 });
     }
 
-    const extension = extensionByContentType[body.contentType];
-    const storageKey = buildStorageKey(
-      gameId,
-      sceneId,
-      body.kind,
-      extension,
-      body.assetId,
-    );
-    const uploadUrl = await createUploadUrl(storageKey, body.contentType);
+    const extension = extensionByContentType[file.type];
+    const storageKey = buildStorageKey(gameId, sceneId, kind, extension, assetId);
+    const body = new Uint8Array(await file.arrayBuffer());
+
+    await uploadObject(storageKey, file.type, body);
+
     const publicUrl = getPublicAssetUrl(storageKey);
 
-    return NextResponse.json({ uploadUrl, publicUrl, storageKey });
+    return NextResponse.json({ publicUrl, storageKey });
   } catch (error) {
     if (error instanceof GameError) {
       const status = error.code === 'NOT_EDITABLE' ? 403 : 400;

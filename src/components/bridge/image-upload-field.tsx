@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
-const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const MAX_FILE_BYTES = 4 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 type ImageUploadKind = 'background' | 'illustration';
@@ -67,21 +67,23 @@ export function ImageUploadField({
     setIsUploading(true);
 
     try {
-      const presignResponse = await fetch(
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('kind', kind);
+      if (assetId) {
+        formData.append('assetId', assetId);
+      }
+
+      const uploadResponse = await fetch(
         `/api/games/${gameId}/scenes/${sceneId}/image-upload`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contentType: file.type,
-            kind,
-            assetId,
-          }),
+          body: formData,
         },
       );
 
-      if (!presignResponse.ok) {
-        const data = (await presignResponse.json()) as { code?: string; error?: string };
+      if (!uploadResponse.ok) {
+        const data = (await uploadResponse.json()) as { code?: string; error?: string };
         if (data.code === 'STORAGE_UNAVAILABLE') {
           setError(t('imageUploadUnavailable'));
         } else {
@@ -90,22 +92,7 @@ export function ImageUploadField({
         return;
       }
 
-      const { uploadUrl, publicUrl } = (await presignResponse.json()) as {
-        uploadUrl: string;
-        publicUrl: string;
-      };
-
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file,
-      });
-
-      if (!uploadResponse.ok) {
-        setError(t('imageUploadFailed'));
-        return;
-      }
-
+      const { publicUrl } = (await uploadResponse.json()) as { publicUrl: string };
       onChange(publicUrl);
     } catch {
       setError(t('imageUploadFailed'));
