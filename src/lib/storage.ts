@@ -70,8 +70,6 @@ function getS3Client() {
     region,
     endpoint: normalizedEndpoint,
     forcePathStyle: isLocalMinio,
-    requestChecksumCalculation: 'DISABLED',
-    responseChecksumValidation: 'DISABLED',
     credentials: {
       accessKeyId,
       secretAccessKey,
