@@ -1,4 +1,13 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  PutObjectCommand,
+  S3Client,
+  type S3ClientConfig,
+  S3ServiceException,
+} from '@aws-sdk/client-s3';
+import {
+  RequestChecksumCalculation,
+  ResponseChecksumValidation,
+} from '@aws-sdk/checksums';
 
 export class StorageConfigError extends Error {
   constructor(message: string) {
@@ -66,34 +75,64 @@ function getS3Client() {
   const normalizedEndpoint = normalizeS3Endpoint(endpoint, bucket);
   const isLocalMinio = normalizedEndpoint.includes('localhost');
 
-  return new S3Client({
+  // AWS SDK >=3.729 defaults to WHEN_SUPPORTED and sends x-amz-checksum-crc32 on PutObject.
+  // Cloudflare R2 rejects that header (501 NotImplemented). See:
+  // https://developers.cloudflare.com/r2/examples/aws/aws-sdk-js-v3/
+  const clientConfig: S3ClientConfig = {
     region,
     endpoint: normalizedEndpoint,
     forcePathStyle: isLocalMinio,
+    requestChecksumCalculation: RequestChecksumCalculation.WHEN_REQUIRED,
+    responseChecksumValidation: ResponseChecksumValidation.WHEN_REQUIRED,
     credentials: {
       accessKeyId,
       secretAccessKey,
     },
-  });
+  };
+
+  return new S3Client(clientConfig);
 }
 
-export function mapStorageUploadError(error: unknown): { code: string; message: string } | null {
+export function mapStorageUploadError(
+  error: unknown,
+): { code: string; message: string; awsCode?: string } | null {
+  if (error instanceof S3ServiceException) {
+    const awsCode = error.name;
+    if (awsCode === 'AccessDenied' || awsCode === 'Forbidden') {
+      return { code: 'STORAGE_ACCESS_DENIED', message: 'Storage access denied', awsCode };
+    }
+    if (awsCode === 'InvalidAccessKeyId' || awsCode === 'SignatureDoesNotMatch') {
+      return { code: 'STORAGE_CREDENTIALS', message: 'Storage credentials are invalid', awsCode };
+    }
+    if (awsCode === 'NoSuchBucket') {
+      return { code: 'STORAGE_BUCKET_NOT_FOUND', message: 'Storage bucket not found', awsCode };
+    }
+    if (awsCode === 'NotImplemented' || awsCode === 'InvalidRequest') {
+      return {
+        code: 'STORAGE_INCOMPATIBLE',
+        message: 'Storage provider rejected the upload request',
+        awsCode,
+      };
+    }
+    return { code: 'STORAGE_PROVIDER_ERROR', message: 'Storage upload failed', awsCode };
+  }
+
   if (!(error instanceof Error)) {
     return null;
   }
 
-  const name = error.name;
-  if (name === 'AccessDenied' || name === 'Forbidden') {
-    return { code: 'STORAGE_ACCESS_DENIED', message: 'Storage access denied' };
-  }
-  if (name === 'InvalidAccessKeyId' || name === 'SignatureDoesNotMatch') {
-    return { code: 'STORAGE_CREDENTIALS', message: 'Storage credentials are invalid' };
-  }
-  if (name === 'NoSuchBucket') {
-    return { code: 'STORAGE_BUCKET_NOT_FOUND', message: 'Storage bucket not found' };
-  }
-
   return null;
+}
+
+export function formatStorageErrorForLog(error: unknown): string {
+  if (error instanceof S3ServiceException) {
+    const status = error.$metadata?.httpStatusCode;
+    return `${error.name}${status ? ` (HTTP ${status})` : ''}: ${error.message}`;
+  }
+  if (error instanceof Error) {
+    return `${error.name}: ${error.message}`;
+  }
+  return String(error);
 }
 
 export function getPublicAssetUrl(storageKey: string): string {

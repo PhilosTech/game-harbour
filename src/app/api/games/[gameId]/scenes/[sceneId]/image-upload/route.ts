@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import {
+  formatStorageErrorForLog,
   getPublicAssetUrl,
   mapStorageUploadError,
   StorageConfigError,
@@ -112,15 +113,17 @@ export async function POST(request: Request, context: RouteContext) {
     }
     const storageError = mapStorageUploadError(error);
     if (storageError) {
-      console.error('[image-upload]', storageError.code, error);
+      console.error('[image-upload]', storageError.code, formatStorageErrorForLog(error));
       return NextResponse.json(
-        { error: storageError.message, code: storageError.code },
+        {
+          error: storageError.message,
+          code: storageError.code,
+          ...(storageError.awsCode ? { awsCode: storageError.awsCode } : {}),
+        },
         { status: 503 },
       );
     }
-    if (error instanceof Error) {
-      console.error('[image-upload]', error.name, error.message);
-    }
+    console.error('[image-upload] unmapped:', formatStorageErrorForLog(error));
     return NextResponse.json({ error: 'Internal error', code: 'STORAGE_ERROR' }, { status: 500 });
   }
 }
