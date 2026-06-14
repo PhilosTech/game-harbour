@@ -3,33 +3,30 @@ import { z } from "zod";
 import { sceneKeySchema } from "@/lib/scene-key";
 
 const importedSceneTaskSchema = z.object({
-  textRu: z.string().trim().max(2000),
-  textEn: z.string().trim().max(2000),
+  textRu: z.string().trim(),
+  textEn: z.string().trim(),
 });
 
 const illustrationHintSchema = z.object({
-  hintRu: z.string().trim().max(80),
-  hintEn: z.string().trim().max(80),
+  hintRu: z.string().trim(),
+  hintEn: z.string().trim(),
 });
 
 export const importedSceneSchema = z.object({
   sceneKey: sceneKeySchema,
   type: z.nativeEnum(SceneType).default(SceneType.STORY),
-  contentRu: z.string().trim().max(5000),
-  contentEn: z.string().trim().max(5000),
-  hostOnlyNotes: z.string().trim().max(2000).optional().default(""),
-  imageUrl: z.string().trim().max(2000).optional().default(""),
-  illustrationHints: z
-    .array(illustrationHintSchema)
-    .max(5)
-    .optional()
-    .default([]),
-  tasks: z.array(importedSceneTaskSchema).max(20).optional().default([]),
-  playerTaskRu: z.string().trim().max(2000).optional().default(""),
-  playerTaskEn: z.string().trim().max(2000).optional().default(""),
+  contentRu: z.string().trim(),
+  contentEn: z.string().trim(),
+  hostOnlyNotes: z.string().trim().optional().default(""),
+  imageUrl: z.string().trim().optional().default(""),
+  illustrationHints: z.array(illustrationHintSchema).optional().default([]),
+  tasks: z.array(importedSceneTaskSchema).optional().default([]),
+  playerTaskRu: z.string().trim().optional().default(""),
+  playerTaskEn: z.string().trim().optional().default(""),
 });
 
 export const importedScenesPayloadSchema = z.object({
+  masterNotes: z.string().trim().optional().default(""),
   scenes: z.array(importedSceneSchema).min(1).max(50),
 });
 
@@ -39,15 +36,11 @@ export type SceneImportError =
   | "INVALID_JSON"
   | "INVALID_FORMAT"
   | "DUPLICATE_SCENE_KEY"
-  | "EMPTY_SCENES"
-  | "NOTE_EMPTY_NOTES"
-  | "NOTE_NOT_LAST";
+  | "EMPTY_SCENES";
 
 export type SceneImportResult =
-  | { ok: true; scenes: ImportedScene[] }
+  | { ok: true; scenes: ImportedScene[]; masterNotes: string }
   | { ok: false; code: SceneImportError; message?: string };
-
-const HOST_NOTES_MAX = 2000;
 
 export function appendIllustrationHintsToNotes(
   hostOnlyNotes: string,
@@ -67,8 +60,7 @@ export function appendIllustrationHintsToNotes(
   });
 
   const block = `\n\n[Image search labels]\n${lines.join("\n")}`;
-  const merged = `${hostOnlyNotes}${block}`.trim();
-  return merged.slice(0, HOST_NOTES_MAX);
+  return `${hostOnlyNotes}${block}`.trim();
 }
 
 function normalizeImportedScene(scene: ImportedScene): ImportedScene {
@@ -117,6 +109,7 @@ export function parseImportedScenes(raw: string): SceneImportResult {
   const keys = new Set<string>();
   const scenes: ImportedScene[] = [];
   const rawScenes = validated.data.scenes;
+  const masterNotes = validated.data.masterNotes;
 
   for (let index = 0; index < rawScenes.length; index += 1) {
     const scene = rawScenes[index];
@@ -126,106 +119,133 @@ export function parseImportedScenes(raw: string): SceneImportResult {
     }
     keys.add(scene.sceneKey);
 
-    if (!scene.contentRu && !scene.contentEn && scene.type !== SceneType.NOTE) {
+    if (!scene.contentRu && !scene.contentEn) {
       return { ok: false, code: "INVALID_FORMAT" };
-    }
-
-    if (scene.type === SceneType.NOTE) {
-      if (!scene.hostOnlyNotes.trim()) {
-        return { ok: false, code: "NOTE_EMPTY_NOTES" };
-      }
-      if (index !== rawScenes.length - 1) {
-        return { ok: false, code: "NOTE_NOT_LAST" };
-      }
     }
 
     scenes.push(normalizeImportedScene(scene));
   }
 
-  return { ok: true, scenes };
+  return { ok: true, scenes, masterNotes };
 }
 
 export function getAiSceneJsonExample(): string {
+  // Generic placeholders only — no real setting, NPCs, or content.
+  // The AI must derive all names, locations, and events from the game description above.
   return JSON.stringify(
     {
+      masterNotes:
+        "[NPC-1]: ([роль], [черта], [секрет]).\n[NPC-2]: ([роль], [черта], [что знает]).\nРесурсы: [что есть у группы].\nТайны: [скрытый факт 1]; [скрытый факт 2].\nКонцовки: [вариант A (рискованно)] / [вариант B (безопасно)] / [вариант C (неоднозначно)].",
       scenes: [
         {
-          sceneKey: "briefing",
+          sceneKey: "scene_01",
           type: "STORY",
           contentRu:
-            "Утро в порту встречает вас сырой солью и гулом двигателей. Спонсор разворачивает на столе выцветшие карты — последняя зацепка ведёт вглубь джунглей.",
+            "[Описание сцены на русском — 600-900 символов, вовлекающее, без решения за игроков].",
           contentEn:
-            "Morning at the port greets you with salt air and engine noise. The sponsor spreads faded maps on the table — the last lead points deep into the jungle.",
+            "[Scene description in English — 600-900 chars, engaging, no decisions made for players].",
           hostOnlyNotes:
-            "Акт 1. Подчеркните ограниченный бюджет и срок. Герои: дайте каждому одну реплику о мотивации.",
+            "Тайны: [скрытый контекст, который ведущий знает, игроки — нет].\nПодсказки если застряли: [что сделать, если группа зависла].\nПоследствия вперёд: [как выбор здесь влияет на следующие сцены].\n[Таблица] Развилка: запиши каждому игроку [что именно фиксировать].",
           imageUrl: "",
           illustrationHints: [
             {
-              hintRu: "Порт Манауса",
-              hintEn: "Manaus port",
-            },
-            {
-              hintRu: "Дневник картографа",
-              hintEn: "Cartographer diary",
+              hintRu: "[Локация или предмет из сеттинга игры]",
+              hintEn: "[Location or item from the game setting]",
             },
           ],
           tasks: [
             {
-              textRu:
-                "Журналист: задайте спонсору вопрос, от которого он отмахнётся.",
-              textEn:
-                "Journalist: ask the sponsor one question they try to dodge.",
+              textRu: "[Герой 1]: [конкретное действие или решение].",
+              textEn: "[Hero 1]: [specific action or decision].",
+            },
+            {
+              textRu: "[Герой 2]: [конкретное действие или решение].",
+              textEn: "[Hero 2]: [specific action or decision].",
+            },
+            {
+              textRu: "[Герой 3]: [конкретное действие или решение].",
+              textEn: "[Hero 3]: [specific action or decision].",
+            },
+            {
+              textRu: "[Герой 4]: [конкретное действие или решение].",
+              textEn: "[Hero 4]: [specific action or decision].",
+            },
+            {
+              textRu: "[Герой 5]: [конкретное действие или решение].",
+              textEn: "[Hero 5]: [specific action or decision].",
             },
           ],
         },
         {
-          sceneKey: "bush_rustle",
+          sceneKey: "scene_02",
           type: "CHECK",
           contentRu:
-            "Тропа сужается, и в кустах справа внезапно шевелится что-то тяжёлое. На секунду все замирают — впереди только узкий проход и тёмная вода.",
+            "[Описание проверки на русском — напряжённый момент, требующий броска кубика].",
           contentEn:
-            "The trail narrows, and something heavy shifts in the bushes to your right. Everyone freezes for a second — ahead lies only a tight passage and dark water.",
+            "[Check description in English — tense moment requiring a dice roll].",
           hostOnlyNotes:
-            "Кубик: d6\nПроверка: без характеристики\nКто бросает: любой игрок\nИнтерпретация: 1 = капибара убегает; 2 = змея шипит и уходит; 3 = агрессивная собака рычит; 4 = шпион конкурентов; 5 = пусто, ветер; 6 = обрывок карты в грязи\nНе game over. После броска дайте группе отреагировать.",
+            "Механика: Кубик: d6 / Проверка: [характеристика или без] / Кто бросает: [кто именно]\nИнтерпретация: 1 = [провал]; 2-3 = [частичный успех]; 4-5 = [успех]; 6 = [критический успех]\nТайны: [скрытый контекст].\nПодсказки если застряли: [что сделать].\nПоследствия вперёд: [как результат влияет на следующее].\n[Таблица] Развилка: запиши каждому [что именно фиксировать].",
           imageUrl: "",
           illustrationHints: [
             {
-              hintRu: "Джунгли Амазонки",
-              hintEn: "Amazon jungle",
+              hintRu: "[Элемент сцены из сеттинга игры]",
+              hintEn: "[Scene element from the game setting]",
             },
           ],
           tasks: [
             {
-              textRu: "Подойдите к шороху или обходите — скажите, почему.",
-              textEn: "Approach the rustling or go around — say why.",
+              textRu: "[Герой 1]: [конкретное действие].",
+              textEn: "[Hero 1]: [specific action].",
+            },
+            {
+              textRu: "[Герой 2]: [конкретное действие].",
+              textEn: "[Hero 2]: [specific action].",
+            },
+            {
+              textRu: "[Герой 3]: [конкретное действие].",
+              textEn: "[Hero 3]: [specific action].",
+            },
+            {
+              textRu: "[Герой 4]: [конкретное действие].",
+              textEn: "[Hero 4]: [specific action].",
+            },
+            {
+              textRu: "[Герой 5]: [конкретное действие].",
+              textEn: "[Hero 5]: [specific action].",
             },
           ],
         },
         {
-          sceneKey: "jungle_gate",
+          sceneKey: "scene_03",
           type: "STORY",
-          contentRu:
-            "К вечеру выходите к старой заставе на границе джунглей. Карта совпала — дальше путь только вперёд, и каждый решает, что готов отдать за ответ.",
-          contentEn:
-            "By evening you reach an old outpost on the jungle edge. The map was right — the only way is forward, and everyone must decide what they will give for an answer.",
+          contentRu: "[Описание финальной сцены акта — 600-900 символов].",
+          contentEn: "[Final act scene description — 600-900 chars].",
           hostOnlyNotes:
-            "Финал акта 1. Открытый финал: не объявляйте победу. Дайте игрокам назвать личную цель на акт 2.",
+            "Тайны: [что ведущий знает].\nПодсказки если застряли: [что сделать].\nПоследствия вперёд: [связь со следующим актом].",
           imageUrl: "",
+          illustrationHints: [],
           tasks: [
             {
-              textRu: "Назовите, ради чего вы идёте дальше.",
-              textEn: "Name what drives you to go on.",
+              textRu: "[Герой 1]: [действие или выбор].",
+              textEn: "[Hero 1]: [action or choice].",
+            },
+            {
+              textRu: "[Герой 2]: [действие или выбор].",
+              textEn: "[Hero 2]: [action or choice].",
+            },
+            {
+              textRu: "[Герой 3]: [действие или выбор].",
+              textEn: "[Hero 3]: [action or choice].",
+            },
+            {
+              textRu: "[Герой 4]: [действие или выбор].",
+              textEn: "[Hero 4]: [action or choice].",
+            },
+            {
+              textRu: "[Герой 5]: [действие или выбор].",
+              textEn: "[Hero 5]: [action or choice].",
             },
           ],
-        },
-        {
-          sceneKey: "host_reference",
-          type: "NOTE",
-          contentRu: "",
-          contentEn: "",
-          hostOnlyNotes:
-            "Справка ведущему (игроки не видят):\nNPC: торговец Мартин (осторожный, знает слухи), бригадир Руис (скрытный конкурент).\nРесурсы: 5 дней провизии, 1 запасной мотор.\nТайны: на свежей тропе следы не местной техники.\nКонцовки: углубиться в джунгли / отступить с уликами / договориться с Руисом.",
-          imageUrl: "",
         },
       ],
     },

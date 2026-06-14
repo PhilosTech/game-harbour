@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
 import {
   getLiveSessionForHost,
+  getSessionMasterNotes,
   getSessionScenesForHost,
   SessionError,
 } from "@/server/sessions";
@@ -24,14 +25,11 @@ export default async function BridgeSessionPage({ params }: Props) {
   }
 
   try {
-    const liveSession = await getLiveSessionForHost(
-      sessionId,
-      authSession.user.id,
-    );
-    const scenes = await getSessionScenesForHost(
-      sessionId,
-      authSession.user.id,
-    );
+    const [liveSession, scenes, masterNotes] = await Promise.all([
+      getLiveSessionForHost(sessionId, authSession.user.id),
+      getSessionScenesForHost(sessionId, authSession.user.id),
+      getSessionMasterNotes(sessionId, authSession.user.id),
+    ]);
 
     return (
       <main className="mx-auto flex min-h-dvh max-w-5xl flex-col gap-6 px-4 py-8">
@@ -52,6 +50,7 @@ export default async function BridgeSessionPage({ params }: Props) {
           hostId={authSession.user.id}
           roomCode={liveSession.roomCode}
           scenes={scenes}
+          masterNotes={masterNotes}
         />
       </main>
     );

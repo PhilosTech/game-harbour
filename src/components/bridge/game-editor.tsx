@@ -55,6 +55,7 @@ type GameEditorProps = {
   titleEn: string;
   descriptionRu: string;
   descriptionEn: string;
+  masterNotes: string;
   heroSlots: HeroSlotSetup[];
   traits: SetupLabel[];
   traitPointsPerStat: number;
@@ -77,6 +78,7 @@ export function GameEditor({
   titleEn,
   descriptionRu,
   descriptionEn,
+  masterNotes,
   heroSlots,
   traits,
   traitPointsPerStat,
@@ -122,6 +124,7 @@ export function GameEditor({
       descriptionRu: useRussian
         ? String(formData.get("descriptionRu") ?? "").trim()
         : "",
+      masterNotes: String(formData.get("masterNotes") ?? "").trim(),
     };
 
     if (useEnglish && (!payload.titleEn || !payload.descriptionEn)) {
@@ -262,6 +265,18 @@ export function GameEditor({
               {t("saveSuccess")}
             </p>
           ) : null}
+
+          <label className="block space-y-2">
+            <span className="text-sm font-medium">{t("masterNotes")}</span>
+            <p className="text-xs text-muted">{t("masterNotesHint")}</p>
+            <textarea
+              name="masterNotes"
+              defaultValue={masterNotes}
+              rows={6}
+              placeholder={t("masterNotesPlaceholder")}
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
+            />
+          </label>
 
           <button
             type="submit"
@@ -565,7 +580,6 @@ function SceneCard({
             >
               <option value={SceneType.STORY}>{t("sceneTypes.STORY")}</option>
               <option value={SceneType.CHECK}>{t("sceneTypes.CHECK")}</option>
-              <option value={SceneType.NOTE}>{t("sceneTypes.NOTE")}</option>
             </select>
           </label>
 
@@ -631,7 +645,6 @@ function SceneCard({
               name="hostOnlyNotes"
               defaultValue={scene.hostOnlyNotes ?? ""}
               rows={4}
-              maxLength={2000}
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
             />
           </label>

@@ -66,6 +66,7 @@ export default async function EditGamePage({ params }: Props) {
         traitPointsPerStat={game.traitPointsPerStat}
         defaultStrengthValue={game.defaultStrengthValue}
         defaultWeaknessValue={game.defaultWeaknessValue}
+        masterNotes={game.masterNotes ?? ""}
         scenes={game.scenes}
       />
     </main>

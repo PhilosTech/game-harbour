@@ -1,4 +1,4 @@
-import { getAiSceneJsonExample } from "@/lib/ai-scene-import";
+﻿import { getAiSceneJsonExample } from "@/lib/ai-scene-import";
 
 export const AI_PLAYER_COUNT_MIN = 2;
 export const AI_PLAYER_COUNT_MAX = 8;
@@ -127,9 +127,9 @@ function buildPlayersAndHeroesSection(
 ${formatHeroSlots(heroSlots, "ru")}
 
 Правила вовлечённости:
-- Каждый герой — **минимум в 2 сценах** (task, CHECK или явный момент в hostOnlyNotes)
-- Минимум **1 CHECK или task** на сильную сторону роли (Медицина, Техника, Убеждение и т.д.)
-- В одной сцене могут действовать 2+ героя; не обязательно все сразу
+- **Правило N-1:** в каждой сцене tasks должны покрывать минимум **${playerCount - 1}** из ${playerCount} героев. Один герой может пропустить сцену без именного task, но **не две сцены подряд** — каждый должен участвовать в большинстве сцен
+- Минимум **1 CHECK или task** на сильную сторону роли (Медицина, Техника, Убеждение и т.д.) за всю партию
+- В одной сцене могут действовать несколько героев; не обязательно все сразу
 - Пиши tasks с именем роли («Журналист: …»), но сцена не должна ломаться, если ведущий позже переименует слот
 - Партия в Game Harbour: **${AI_PLAYER_COUNT_MIN}–${AI_PLAYER_COUNT_MAX}** игроков; сейчас ориентир — **${playerCount}**`;
     }
@@ -157,9 +157,9 @@ The template defines **${playerCount}** hero slots (fixed roles):
 ${formatHeroSlots(heroSlots, "en")}
 
 Involvement rules:
-- Every hero — **at least 2 scenes** (task, CHECK, or clear beat in hostOnlyNotes)
-- At least **1 CHECK or task** per role strength (Medicine, Tech, Persuasion, etc.)
-- 2+ heroes may share a scene; not everyone every scene
+- **N-1 rule:** each scene's tasks must cover at least **${playerCount - 1}** of ${playerCount} heroes. One hero may skip a scene without a named task, but **never two scenes in a row** — every hero must participate in most scenes
+- At least **1 CHECK or task** per role strength (Medicine, Tech, Persuasion, etc.) across the whole session
+- Multiple heroes may share a scene; not everyone every scene
 - Use role names in tasks ("Journalist: …"); scenes must still work if the host renames a slot later
 - Game Harbour supports **${AI_PLAYER_COUNT_MIN}–${AI_PLAYER_COUNT_MAX}** players; target **${playerCount}** for this draft`;
   }
@@ -177,6 +177,34 @@ Rules without named heroes:
 - If the host **adds hero slots later**, scenes stay playable (roles map onto functions)
 
 Do not tie the plot to a single skill carrier.`;
+}
+
+function buildMasterNotesRules(isRu: boolean): string {
+  if (isRu) {
+    return `## Справочник ведущего (masterNotes)
+
+Поле **masterNotes** в корне JSON — глобальная шпаргалка для ведущего на всю партию. Игроки её не видят.
+
+Обязательно включи:
+- **NPC** — каждый именованный персонаж: роль, характер, что скрывает, как давит на героев
+- **Ресурсы** — ограничения, которые действуют всю игру (провизия, время, деньги, патроны)
+- **Тайны** — факты, которые ведущий знает заранее, но игроки узнают постепенно
+- **Концовки** — минимум 2 варианта финала с кратким описанием условий
+
+Формат: свободный текст с переносами строк. Лаконично, но информативно — ведущий должен прочитать за 2 минуты и понять всю картину.`;
+  }
+
+  return `## Host reference (masterNotes)
+
+The **masterNotes** field at JSON root — a global cheat-sheet for the host, covering the whole session. Players never see it.
+
+Must include:
+- **NPCs** — each named character: role, personality, what they hide, how they pressure heroes
+- **Resources** — session-wide constraints (food, time, money, ammo)
+- **Secrets** — facts the host knows upfront but players discover gradually
+- **Endings** — at least 2 possible finales with brief conditions
+
+Format: plain text with line breaks. Concise but complete — host reads it in 2 minutes and grasps the full picture.`;
 }
 
 function buildPlatformRules(
@@ -225,6 +253,15 @@ function buildPlatformRules(
 
 За партию — **минимум 3 разных кубика** в CHECK-сценах.
 
+### Структура hostOnlyNotes (для всех сцен)
+hostOnlyNotes — трёхслойная заметка ведущему, всегда в таком порядке:
+1. **Механика** — кубик, DC, кто бросает, исходы (для CHECK обязательно; для STORY только если есть скрытая проверка)
+2. **Тайны и скрытый контекст** — что игроки не знают, что NPC скрывают, какой подтекст у сцены
+3. **Подсказки если группа застряла** — 1-2 конкретных хода ведущего чтобы сдвинуть сцену
+4. **Последствия и связи вперёд** — что переходит в следующую сцену: осложнение, преимущество, изменение состояния NPC
+
+Минимум для STORY: слои 2, 3, 4. Минимум для CHECK: все четыре.
+
 - **Характеристики** — у каждого игрока 0–${traitMax} на каждую (независимо)
 ${heroStrengthLine}
 - **Картинки** — ведущий загружает вручную; не придумывай URL
@@ -232,7 +269,6 @@ ${heroStrengthLine}
 ### Типы сцен
 - **STORY** — сюжет; текст игрокам + tasks
 - **CHECK** — бросок кубика
-- **NOTE** — **только шпаргалка ведущему**. contentRu/contentEn = **""** (пусто). Вся суть — в **hostOnlyNotes** (минимум 4 пункта: NPC, ресурсы, тайны, концовки). **NOTE всегда последняя сцена в массиве** — не в середине!
 
 ### Задания (tasks) и живая сцена
 См. раздел **«Драма, NPC и задания»** ниже — tasks не должны быть скучной рутиной.
@@ -244,7 +280,7 @@ ${heroStrengthLine}
 - **2–6 слов**, до ~50 символов: «Порт Манауса», «Река Амазонки», «Дикая Амазонка», «NPC Руис»
 - Название **места, предмета или NPC** — без деталей («влажная трава», «туман на рассвете», «зелёные лианы»)
 - hintRu и hintEn — одна и та же суть, короткая подпись на каждом языке
-- 0–2 на сцену, только если картинка реально нужна; для NOTE обычно не нужны
+- 0–2 на сцену, только если картинка реально нужна
 - Фон сцены ведущий загружает отдельно; illustrationHints — доп. картинки внутри сцены
 - Без URL`;
   }
@@ -273,6 +309,15 @@ The host runs the session manually:
 
 At least **3 different die types** across CHECK scenes.
 
+### hostOnlyNotes structure (all scenes)
+hostOnlyNotes — four layers, always in this order:
+1. **Mechanics** — die, DC, who rolls, outcomes (required for CHECK; for STORY only if a hidden check exists)
+2. **Secrets and hidden context** — what players don't know, what NPCs hide, the subtext of the scene
+3. **Hints if the group is stuck** — 1-2 concrete host moves to push the scene forward
+4. **Consequences and forward links** — what carries into the next scene: complication, advantage, changed NPC state
+
+Minimum for STORY: layers 2, 3, 4. Minimum for CHECK: all four.
+
 - **Traits** — 0–${traitMax} per player per trait
 ${heroStrengthLine}
 - **Images** — host uploads manually; no invented URLs
@@ -280,7 +325,6 @@ ${heroStrengthLine}
 ### Scene types
 - **STORY** — narrative beat
 - **CHECK** — dice moment
-- **NOTE** — host-only. contentRu/contentEn = **""**. All content in **hostOnlyNotes** (min 4 bullets: NPCs, resources, secrets, endings). **NOTE must be the last scene in the array** — never in the middle!
 
 ### Tasks and scene drama
 See **Drama, NPCs, and tasks** below — avoid bland checklist chores.
@@ -292,7 +336,7 @@ Rules:
 - **2–6 words**, ~50 chars max: "Manaus port", "Amazon river", "Wild Amazon", "NPC Ruiz"
 - Name the **place, object, or NPC** — no visual prose (no "wet grass at dawn", "green vines")
 - hintRu and hintEn — same idea, short label in each language
-- 0–2 per scene when useful; skip for NOTE
+- 0–2 per scene when useful
 - Scene background is uploaded separately; illustrationHints are extra in-scene images
 - No URLs`;
 }
@@ -308,23 +352,24 @@ function buildDramaAndTasksRules(isRu: boolean): string {
 - В **contentRu/contentEn** показывай действие: шорох в кустах, свист с берега, внезапный голос, сбой мотора, ливень
 - В **hostOnlyNotes** — как NPC себя ведёт, что скрывает, чем давит на слабость героя
 
-### Кубик = сюрприз (особенно d4–d8)
-В **минимум 1 CHECK** дай **таблицу случайного исхода** в hostOnlyNotes — что «выскочило» после броска:
+### Кубик = сюрприз (особенно d4-d8)
+В **минимум 1 CHECK** дай **таблицу случайного исхода** в hostOnlyNotes - что произошло после броска. Содержание таблицы - **из сеттинга этой игры**:
 \`\`\`
 Кубик: d6
-Интерпретация: 1 = кролик/капибара сбегает; 2 = змея шипит; 3 = агрессивная собака; 4 = человек конкурентов; 5 = пусто; 6 = находка (ключ, обрывок карты)
+Интерпретация: 1 = [плохой исход из сеттинга]; 2 = [осложнение]; 3 = [нейтральный сюрприз]; 4 = [угроза или NPC-противник]; 5 = [пусто / ложная тревога]; 6 = [находка или преимущество]
 \`\`\`
-Пример сцены: в кустах шевелится — бросок → кролик или собака или шпион. Исход **не game over**, но меняет напряжение и разговор.
+Исход **не game over**, но меняет напряжение и разговор.
 
 ### Задания (tasks) — что писать
-- 0–3 на сцену, до ~120 знаков, **императив с выбором или эмоцией**
+- **Количество:** минимум N-1 именных tasks на сцену (по одному на каждого героя кроме одного) + можно добавить 1–2 групповых
+- До ~120 знаков каждый, **императив с выбором или эмоцией**
 - **Не дублируй** contentRu и не пиши канцелярию
 
 **Хорошие tasks:**
-- «Подойдите к шороху или обходите — скажите, почему»
-- «Журналист: вытяните у Руиса одну правду, пока льёт дождь»
-- «Врач: решите, лечить ли раненого врага, рискуя временем»
-- «Кто-то из группы: опишите, что сделаете, если из кустов выскочит собака»
+- «Проводник: продолжаете маршрут или меняете план — скажите, почему»
+- «Журналист: задайте NPC вопрос, который его смутит — и смотрите на реакцию»
+- «Врач: решите, тратить ли последний ресурс на раненого, рискуя остальными»
+- «Кто-то из группы: скажите, что сделаете первым, если ситуация выйдет из-под контроля»
 
 **Плохие tasks (избегай):**
 - «Проверьте аптечку», «Попробуйте воду», «Осмотрите развилку», «Распределите роли»
@@ -333,7 +378,20 @@ function buildDramaAndTasksRules(isRu: boolean): string {
 ### Баланс
 - Не все tasks только «Герой: …» — добавляй **общие** («Группа: …», «Кто первый …»)
 - CHECK почти всегда имеет 1 task — **реакция на исход броска**, не повтор проверки
-- STORY тоже может иметь task — короткий выбор или реплика NPC`;
+- STORY тоже может иметь task — короткий выбор или реплика NPC
+
+### Таблица заметок игроков (Развилка / Концовка)
+В Game Harbour у каждого игрока есть таблица сцен × 2 строки: **«Развилка»** и **«Концовка»**. Ведущий заполняет её вручную в ходе игры — это накопительный трекер решений и итогов.
+
+В **hostOnlyNotes** ключевых сцен укажи ведущему конкретную инструкцию:
+\`\`\`
+[Таблица] Развилка: запиши каждому игроку «углубились» или «отступили» — это повлияет на финал.
+[Таблица] Концовка: запиши имя NPC которому игрок доверился — в финале это станет его уязвимостью.
+\`\`\`
+- **Развилка** — что именно записать и почему это важно для дальнейшего сюжета
+- **Концовка** — конкретная деталь о герое, которую ведущий фиксирует для финальной сцены
+- В финальной сцене обязательно сошлись на данных из таблицы: «Те кто записал X — получают преимущество / осложнение»
+- Не в каждой сцене — только в 1–3 поворотных моментах за партию`;
   }
 
   return `## Drama, NPCs, and tasks
@@ -345,23 +403,24 @@ The table should feel **alive**: surprises, NPCs, reactions — not "check the m
 - In **contentRu/contentEn**, show action: rustling bushes, a whistle from the bank, a sudden voice, engine failure, rain
 - In **hostOnlyNotes**, note how each NPC behaves, what they hide, how they press a hero flaw
 
-### Dice = surprise (especially d4–d8)
-In **at least 1 CHECK**, add a **random outcome table** in hostOnlyNotes — what "popped out" after the roll:
+### Dice = surprise (especially d4-d8)
+In **at least 1 CHECK**, add a **random outcome table** in hostOnlyNotes - what happened after the roll. Table content must come from **this game's setting**:
 \`\`\`
 Die: d6
-Interpretation: 1 = rabbit/capybara flees; 2 = snake hisses; 3 = aggressive dog; 4 = rival scout; 5 = nothing; 6 = find (key, map scrap)
+Interpretation: 1 = [bad outcome from setting]; 2 = [complication]; 3 = [neutral surprise]; 4 = [threat or NPC-antagonist]; 5 = [nothing / false alarm]; 6 = [find or advantage]
 \`\`\`
-Example: something stirs in the bushes — roll → rabbit, dog, or spy. Not game over, but tension and dialogue shift.
+Not game over, but tension and dialogue shift.
 
 ### Tasks — what to write
-- 0–3 per scene, ~120 chars, **imperative with a choice or emotion**
+- **Count:** minimum N-1 named tasks per scene (one per hero except one) + 1–2 group tasks optional
+- ~120 chars each, **imperative with a choice or emotion**
 - Do **not** repeat scene body text or write admin chores
 
 **Good tasks:**
-- "Approach the rustling or go around — say why"
-- "Journalist: pull one truth from Ruiz while the rain hammers down"
-- "Doctor: decide whether to treat a wounded rival at the cost of time"
-- "Someone in the group: say what you do if a dog bursts from the bushes"
+- "Guide: keep the route or change the plan — say why"
+- "Journalist: ask the NPC a question that will make them uncomfortable — watch the reaction"
+- "Doctor: decide whether to spend the last resource on the injured, risking the rest"
+- "Someone in the group: say what you do first if the situation goes out of control"
 
 **Bad tasks (avoid):**
 - "Check the med kit", "Taste the water", "Inspect the fork", "Assign roles"
@@ -370,7 +429,20 @@ Example: something stirs in the bushes — roll → rabbit, dog, or spy. Not gam
 ### Balance
 - Not every task is "Hero: …" — add **group** tasks ("Group: …", "Whoever moves first …")
 - CHECK scenes almost always have 1 task — **react to the roll**, do not repeat the check
-- STORY scenes may have a task — a short choice or NPC line`;
+- STORY scenes may have a task — a short choice or NPC line
+
+### Player notes table (Branching / Ending)
+Game Harbour gives each player a table: scenes × 2 rows — **"Branching"** and **"Ending"**. The host fills it live during play — it's a cumulative tracker of decisions and outcomes.
+
+In hostOnlyNotes of key scenes, give the host a specific instruction:
+\`\`\`
+[Table] Branching: write "went deeper" or "retreated" for each player — this affects the finale.
+[Table] Ending: write the NPC name each player trusted — in the finale this becomes their vulnerability.
+\`\`\`
+- **Branching** — what exactly to record and why it matters for the plot ahead
+- **Ending** — a specific hero detail the host captures for the final scene
+- The finale must reference the table data: "Players who recorded X get an advantage / complication"
+- Not every scene — only 1–3 turning points per session`;
 }
 
 function buildWritingRules(isRu: boolean): string {
@@ -379,20 +451,56 @@ function buildWritingRules(isRu: boolean): string {
 
 - Живая короткая проза, не отчёт
 - Первая STORY — атмосферное вступление
-- Предпоследняя сцена — сильная финальная STORY (последняя — NOTE)
-- 3–6 предложений на STORY/CHECK
+- Последняя сцена — сильный финал STORY
+- **600–900 символов** на contentRu и столько же на contentEn (считай сам перед выводом)
 - contentRu и contentEn — один смысл, естественный язык
-- Не пиши «команда должна решить» — показывай сцену`;
+- Не пиши «команда должна решить» — показывай сцену
+
+### Согласованность сюжета
+- Каждый NPC из masterNotes должен появиться минимум в **2 сценах** (введение + развитие или развязка)
+- Сюжетные нити (дневник Брауна, предательство спонсора, соперник и т.д.) должны **проходить через все три акта** — не обрываться после одной сцены
+- Если в акте 1 появился NPC — в акте 2 или 3 он должен **сделать что-то важное**, не просто упоминаться
+- Ресурсы из masterNotes должны **ощущаться**: если провизия кончается — сцена должна это показывать
+
+### Черты героев и характеристики
+- В hostOnlyNotes каждой сцены **явно укажи**, чья сильная сторона или слабость здесь работает
+- Слабость героя — не просто ярлык: покажи **момент**, когда она создаёт реальную проблему или выбор
+- Пример: «Импульсивность Врача: если он действует первым без проверки — потратит одно использование аптечки»
+- **Общие характеристики:** за партию должна быть задействована **минимум половина** из заданных характеристик — каждая хотя бы в одной CHECK или task
+- В tasks добавляй отсылки к характеристикам: «Тот у кого выше Выносливость…», «Участник с лучшим Расследованием…», «Кто готов потратить Атлетику…»
+
+### Препятствия и конфликты
+- Препятствие в сцене — не всегда NPC: **погода, рельеф, нехватка ресурса, моральный выбор, время**
+- Минимум **1 сцена без NPC-антагониста** — где давит среда или обстоятельства, а не человек
+- В CHECK — исход влияет на **следующую сцену**: провал добавляет осложнение, успех даёт преимущество`;
   }
 
   return `## Writing style
 
 - Vivid short prose, not a report
 - First STORY — atmospheric opening
-- Second-to-last scene — strong finale STORY (last is NOTE)
-- 3–6 sentences per STORY/CHECK
+- Last scene — strong STORY finale
+- **600–900 characters** for contentRu and the same for contentEn (count before outputting)
 - Natural bilingual wording
-- Show the scene, not engine instructions`;
+- Show the scene, not engine instructions
+
+### Story consistency
+- Every NPC from masterNotes must appear in at least **2 scenes** (introduction + development or resolution)
+- Plot threads (Brown's diary, sponsor betrayal, rival, etc.) must **run through all three acts** — no thread dropped after one scene
+- An NPC introduced in act 1 must **do something significant** in act 2 or 3, not just be mentioned
+- Resources from masterNotes must **feel real**: if food is running low, a scene should show it
+
+### Hero traits and shared traits
+- In each scene's hostOnlyNotes, **explicitly name** whose strength or flaw is active here
+- A hero's flaw is not just a label: show the **moment** it creates a real problem or choice
+- Example: "Doctor's Impulsiveness: if they act first without a check — spend one med kit use"
+- **Shared traits:** across the session, at least **half of the listed traits** must be used — each in at least one CHECK or task
+- In tasks, reference traits by name: "Whoever has higher Endurance…", "The one with the best Investigation…", "Who is willing to spend Athletics…"
+
+### Obstacles and conflict
+- An obstacle is not always an NPC: **weather, terrain, scarce resources, moral choice, time pressure**
+- At least **1 scene with no NPC antagonist** — environment or circumstance is the pressure
+- In CHECK — the outcome affects the **next scene**: failure adds a complication, success grants an advantage`;
 }
 
 function buildStructureRules(
@@ -402,15 +510,13 @@ function buildStructureRules(
 ): string {
   const { act1, act2 } = getActStructure(sceneCount);
   const minutesPerScene = Math.round(durationMinutes / sceneCount);
-  const noteIndex = sceneCount;
-  const lastStoryIndex = sceneCount - 1;
 
   if (isRu) {
     return `## Структура партии
 
 - **${sceneCount}** сцен, ~**${durationMinutes}** мин (~${minutesPerScene} мин/сцена)
-- Акт 1: сцены 1–${act1} | Акт 2: ${act1 + 1}–${act1 + act2} | Акт 3: ${act1 + act2 + 1}–${sceneCount - 1} (без NOTE)
-- **Ровно 1 NOTE** — **последняя** сцена (#${noteIndex}). Предпоследняя (#${lastStoryIndex}) — **финальная STORY**
+- Акт 1: сцены 1–${act1} | Акт 2: ${act1 + 1}–${act1 + act2} | Акт 3: ${act1 + act2 + 1}–${sceneCount}
+- Последняя сцена (#${sceneCount}) — **финальная STORY** (не CHECK)
 - **2–4 CHECK** с разными характеристиками и **≥3 типами кубиков**
 - JSON — линейный; ветки ведущий озвучивает устно`;
   }
@@ -418,8 +524,8 @@ function buildStructureRules(
   return `## Session structure
 
 - **${sceneCount}** scenes, ~**${durationMinutes}** min
-- Act 1: 1–${act1} | Act 2: ${act1 + 1}–${act1 + act2} | Act 3: ${act1 + act2 + 1}–${sceneCount - 1} (excluding NOTE)
-- **Exactly 1 NOTE** — **last** scene (#${noteIndex}). Scene #${lastStoryIndex} — **finale STORY**
+- Act 1: 1–${act1} | Act 2: ${act1 + 1}–${act1 + act2} | Act 3: ${act1 + act2 + 1}–${sceneCount}
+- Last scene (#${sceneCount}) — **finale STORY** (not CHECK)
 - **2–4 CHECK** scenes, **≥3 die types**
 - Linear JSON; host branches verbally`;
 }
@@ -432,8 +538,12 @@ function buildSelfCheckSection(
 ): string {
   const heroChecks = hasHeroes
     ? isRu
-      ? `- [ ] Каждый из **${heroCount}** героев — минимум 2 сцены и 1 момент сильной стороны`
-      : `- [ ] Each of **${heroCount}** heroes — 2+ scenes and 1 strength moment`
+      ? `- [ ] В каждой сцене tasks покрывают минимум **${heroCount - 1}** из ${heroCount} героев (правило N-1)
+- [ ] Ни один герой не пропускает именной task **две сцены подряд**
+- [ ] Каждый герой получил минимум **1 момент сильной стороны** за партию`
+      : `- [ ] Each scene's tasks cover at least **${heroCount - 1}** of ${heroCount} heroes (N-1 rule)
+- [ ] No hero skips a named task **two scenes in a row**
+- [ ] Every hero gets at least **1 strength moment** across the session`
     : isRu
       ? "- [ ] Нет жёстких имён; tasks работают для 2–8 игроков"
       : "- [ ] No fixed names; tasks work for 2–8 players";
@@ -443,17 +553,22 @@ function buildSelfCheckSection(
 
 Перед выводом JSON мысленно проверь каждый пункт. Если что-то не так — **исправь**, потом отвечай.
 
+- [ ] **masterNotes** заполнен: NPC (имя, роль, тайна), ресурсы, глобальные тайны, минимум 2 концовки
 - [ ] Ровно **${sceneCount}** сцен в массиве scenes
-- [ ] **1 NOTE** — последняя сцена; **hostOnlyNotes** заполнен (NPC, ресурсы, тайны, концовки), не пустой
-- [ ] NOTE: contentRu и contentEn = ""
-- [ ] Предпоследняя сцена — STORY-финал, не CHECK и не NOTE
+- [ ] Последняя сцена (#${sceneCount}) — STORY-финал, не CHECK
 - [ ] **2–4 CHECK**; в каждой CHECK есть блок «Кубик:» в hostOnlyNotes
 - [ ] В CHECK использованы **≥3 разных кубика** (не только d20)
-- [ ] Все STORY/CHECK имеют contentRu **и** contentEn (не пустые)
+- [ ] Все сцены имеют contentRu **и** contentEn (не пустые)
 ${heroChecks}
 - [ ] tasks живые (выбор, NPC, реакция) — нет рутины «проверьте аптечку»
 - [ ] ≥1 CHECK с таблицей сюрприза (d4–d8/d6: кусты, зверь, NPC)
 - [ ] tasks не копируют текст сцены
+- [ ] hostOnlyNotes каждой сцены содержит: тайны/контекст + подсказки если застряли + последствия вперёд (+ механика для CHECK)
+- [ ] В 1–3 ключевых сценах есть подсказка [Таблица] для Развилки и Концовки
+- [ ] contentRu каждой сцены **600–900 символов** (не меньше, не больше)
+- [ ] Каждый NPC из masterNotes появляется минимум в 2 сценах
+- [ ] Минимум половина общих характеристик задействована в CHECK или tasks
+- [ ] Нет расовых стереотипов, реальной политики, графического насилия
 - [ ] sceneKey уникальны, латиница
 - [ ] imageUrl везде "" ; illustrationHints — короткие подписи (2–6 слов), не описания картинки
 - [ ] Только JSON, без текста и markdown снаружи`;
@@ -463,20 +578,51 @@ ${heroChecks}
 
 Verify each item. Fix issues, then output JSON.
 
+- [ ] **masterNotes** filled: NPCs (name, role, secret), resources, global secrets, at least 2 endings
 - [ ] Exactly **${sceneCount}** scenes in the array
-- [ ] **1 NOTE** — last scene; **hostOnlyNotes** filled (NPCs, resources, secrets, endings), not empty
-- [ ] NOTE: contentRu and contentEn = ""
-- [ ] Second-to-last scene — STORY finale
+- [ ] Last scene (#${sceneCount}) — STORY finale, not CHECK
 - [ ] **2–4 CHECK** scenes; each has "Die:" in hostOnlyNotes
 - [ ] **≥3 different die types** across CHECK scenes
-- [ ] All STORY/CHECK have both contentRu and contentEn
+- [ ] All scenes have both contentRu and contentEn (non-empty)
 ${heroChecks}
 - [ ] tasks are vivid (choice, NPC, reaction) — no "check the med kit" chores
 - [ ] ≥1 CHECK has a surprise table (d4–d8/d6: bushes, animal, NPC)
 - [ ] tasks do not repeat scene body
+- [ ] hostOnlyNotes for each scene contains: secrets/context + hints if stuck + forward consequences (+ mechanics for CHECK)
+- [ ] 1–3 key scenes have a [Table] hint for Branching and Ending
+- [ ] contentRu of each scene is **600–900 characters** (not shorter, not longer)
+- [ ] Every NPC from masterNotes appears in at least 2 scenes
+- [ ] At least half of the shared traits used in CHECK or tasks
+- [ ] No racial stereotypes, real-world politics, or graphic violence
 - [ ] Unique sceneKeys
 - [ ] imageUrl "" ; illustrationHints are short labels (2–6 words), not image prompts
 - [ ] JSON only, no surrounding text`;
+}
+
+function buildContentRestrictions(isRu: boolean): string {
+  if (isRu) {
+    return `## Ограничения контента
+
+- **Без магии и мистики** — никаких заклинаний, демонов, паранормального, сверхъестественных сил. Конфликты строятся на людях, технике, среде и случае. В sci-fi или фэнтези-сеттинге допустимы: неизвестные организмы, аномальные условия среды, необъяснённые явления — но без мистической подоплёки и без монстров-антагонистов
+- **Без расовых, этнических и национальных стереотипов** — NPC определяются ролью и характером, не происхождением
+- **Без реальной политики и религии** — конфликты строятся на личных мотивах, деньгах, власти, тайнах
+- **Без жестокого насилия в тексте игроков** (contentRu/contentEn) — напряжение через угрозу и выбор, не через описание крови
+- **Без сексуального контента, пошлости и грубой лексики**
+- **Без пропаганды** — ни одна сторона конфликта не подаётся как однозначно правая или неправая
+- Тёмные темы (смерть, предательство, жадность) — допустимы, если служат драме и выбору, а не шоку
+- Принцип: игра комфортна для любой аудитории`;
+  }
+
+  return `## Content restrictions
+
+- **No magic or mysticism** — no spells, demons, paranormal, or supernatural forces. Conflict is built on people, technology, environment, and chance. In sci-fi or fantasy settings, the following are allowed: unknown organisms, anomalous environmental conditions, unexplained phenomena — but without mystical underpinning and without monster antagonists
+- **No racial, ethnic, or national stereotypes** — NPCs are defined by role and personality, not origin
+- **No real-world politics or religion** — conflict is built on personal motives, money, power, secrets
+- **No graphic violence in player-facing text** (contentRu/contentEn) — tension through threat and choice, not gore
+- **No sexual content, vulgarity, or crude language**
+- **No propaganda** — no side in the conflict is framed as simply right or wrong
+- Dark themes (death, betrayal, greed) — acceptable when they serve drama and choice, not shock
+- Principle: the game must be comfortable for any audience`;
 }
 
 export function buildAiScenePrompt(
@@ -503,37 +649,37 @@ export function buildAiScenePrompt(
 
 Верни **только** один валидный JSON-объект. Без markdown, без текста до или после.
 
+> **ВАЖНО:** пример ниже показывает **только структуру JSON**. Все плейсхолдеры в квадратных скобках — это заглушки формата. Имена персонажей, локации, события и детали сеттинга ты **обязан брать исключительно из описания игры выше**. Никакого Амазонки, джунглей или других игр — только то, что указал ведущий. Количество tasks в примере — это иллюстрация структуры, не фиксированное число. **Количество tasks в каждой сцене = N-1 из раздела «Игроки и герои» (минимум именных tasks на сцену).**
+
 \`\`\`json
 ${example}
 \`\`\`
 
 Технические правила:
+- **masterNotes** — строка в корне JSON (не внутри scenes); NPC, ресурсы, тайны, концовки
 - sceneKey: латиница, цифры, _ и -
 - STORY/CHECK: contentRu и contentEn обязательны и непустые
-- NOTE: contentRu/contentEn = ""; hostOnlyNotes обязателен и развёрнут
-- NOTE — всегда последний элемент массива scenes
 - imageUrl: ""
-- illustrationHints: короткие подписи для поиска, до ~50 символов
-- Без магии (если ведущий не указал иное)`
+- illustrationHints: короткие подписи для поиска, до ~50 символов`
     : `## Response format
 
 Return **only** one valid JSON object. No markdown, no text outside.
+
+> **IMPORTANT:** the example below shows **only the JSON structure**. All placeholders in square brackets are format stubs. Character names, locations, events, and setting details **must come exclusively from the game description above**. Do not copy or invent settings — use only what the host provided. The example has 5 tasks per scene — that is N-1 for 6 heroes. **Adjust task count to the actual N-1 from the "Players and heroes" section.**
 
 \`\`\`json
 ${example}
 \`\`\`
 
 Technical rules:
+- **masterNotes** — string at root level (not inside scenes); NPCs, resources, secrets, endings
 - sceneKey: latin, digits, _ and -
 - STORY/CHECK: non-empty contentRu and contentEn
-- NOTE: empty content fields; rich hostOnlyNotes required
-- NOTE — always the last item in scenes[]
 - imageUrl: ""
-- illustrationHints: short search labels, ~50 chars max
-- No magic unless host overrides`;
+- illustrationHints: short search labels, ~50 chars max`;
 
   const body = isRu
-    ? `Ты — сценарист настольных сюжетных игр для ведущего (НЕ классический D&D). Придумай сцены для шаблона в Game Harbour.
+    ? `Ты — сценарист настольных сюжетных игр для ведущего (НЕ классический D&D). Придумай сцены и справочник ведущего для шаблона в Game Harbour.
 
 ## Уже задано ведущим
 
@@ -552,11 +698,15 @@ ${formatList(game.traits, "ru")}
 
 ${buildPlatformRules(true, traitMax, hasHeroes)}
 
+${buildMasterNotesRules(true)}
+
 ${buildStructureRules(true, options.sceneCount, options.durationMinutes)}
 
 ${buildWritingRules(true)}
 
 ${buildDramaAndTasksRules(true)}
+
+${buildContentRestrictions(true)}
 
 ## Пожелания ведущего
 
@@ -565,7 +715,7 @@ ${buildHostNotesBlock(options.hostNotes, true)}
 ${buildSelfCheckSection(true, options.sceneCount, hasHeroes, heroCount)}
 
 ${sharedTail}`
-    : `You write narrative tabletop scenes for Game Harbour (NOT classic D&D).
+    : `You write narrative tabletop scenes and a host reference for Game Harbour (NOT classic D&D).
 
 ## Set by the host
 
@@ -584,11 +734,15 @@ ${formatList(game.traits, "en")}
 
 ${buildPlatformRules(false, traitMax, hasHeroes)}
 
+${buildMasterNotesRules(false)}
+
 ${buildStructureRules(false, options.sceneCount, options.durationMinutes)}
 
 ${buildWritingRules(false)}
 
 ${buildDramaAndTasksRules(false)}
+
+${buildContentRestrictions(false)}
 
 ## Host wishes
 

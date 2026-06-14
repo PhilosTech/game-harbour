@@ -35,7 +35,7 @@ export const createSceneSchema = z
   .object({
     sceneKey: sceneKeySchema,
     type: z.nativeEnum(SceneType).default(SceneType.STORY),
-    hostOnlyNotes: z.string().trim().max(2000).optional(),
+    hostOnlyNotes: z.string().trim().optional(),
   })
   .merge(bilingualSceneBodySchema);
 
@@ -51,7 +51,7 @@ const sceneIllustrationInputSchema = z.object({
 export const updateSceneSchema = z
   .object({
     type: z.nativeEnum(SceneType),
-    hostOnlyNotes: z.string().trim().max(2000),
+    hostOnlyNotes: z.string().trim(),
     imageUrl: z.string().trim().max(2000).optional().default(""),
     tasks: z.array(sceneTaskInputSchema).max(20).default([]),
     illustrations: z.array(sceneIllustrationInputSchema).max(20).default([]),
@@ -353,6 +353,7 @@ export const updateGameSetupSchema = z
 
 export const importScenesSchema = z.object({
   mode: z.enum(["append", "replace"]).default("append"),
+  masterNotes: z.string().trim().optional().default(""),
   scenes: z.array(importedSceneSchema).min(1).max(50),
 });
 
@@ -420,6 +421,13 @@ export async function importGameScenes(
 
   if (data.mode === "replace") {
     await db.gameScene.deleteMany({ where: { gameId } });
+  }
+
+  if (data.masterNotes) {
+    await db.gameTemplate.update({
+      where: { id: gameId },
+      data: { masterNotes: data.masterNotes },
+    });
   }
 
   const existing = await db.gameScene.findMany({
@@ -498,6 +506,7 @@ export async function updateHostGame(
       titleEn: data.titleEn,
       descriptionRu: data.descriptionRu,
       descriptionEn: data.descriptionEn,
+      masterNotes: data.masterNotes || null,
     },
   });
 }

@@ -99,6 +99,7 @@ model GameTemplate {
   traitPointsPerStat     Int @default(30)
   defaultStrengthValue   Int @default(35)
   defaultWeaknessValue   Int @default(8)
+  masterNotes            String?   @db.Text
   createdAt              DateTime @default(now())
   updatedAt          DateTime       @updatedAt
 

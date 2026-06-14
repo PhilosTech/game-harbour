@@ -19,6 +19,7 @@ type SessionConsoleProps = {
   hostId: string;
   roomCode: string;
   scenes: SessionSceneData[];
+  masterNotes: string;
 };
 
 const panelClass = "rounded-2xl border border-border bg-card p-5";
@@ -28,6 +29,7 @@ export function SessionConsole({
   hostId,
   roomCode,
   scenes,
+  masterNotes,
 }: SessionConsoleProps) {
   const t = useTranslations("session");
   const td = useTranslations("dice");
@@ -213,6 +215,15 @@ export function SessionConsole({
           <p className="text-sm text-muted">{t("needPlayersToStart")}</p>
         ) : null}
       </section>
+
+      {masterNotes ? (
+        <section className={panelClass}>
+          <h2 className="mb-2 text-sm font-semibold text-accent">
+            {t("masterNotes")}
+          </h2>
+          <p className="whitespace-pre-wrap text-sm text-muted">{masterNotes}</p>
+        </section>
+      ) : null}
 
       <StartGameConfirm
         playerCount={playerCount}

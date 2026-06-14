@@ -261,6 +261,20 @@ export async function getLiveSessionForHost(sessionId: string, hostId: string) {
   return session;
 }
 
+export async function getSessionMasterNotes(
+  sessionId: string,
+  hostId: string,
+): Promise<string> {
+  const session = await getLiveSessionForHost(sessionId, hostId);
+
+  const game = await db.gameTemplate.findUnique({
+    where: { id: session.gameId },
+    select: { masterNotes: true },
+  });
+
+  return game?.masterNotes ?? "";
+}
+
 export async function getSessionScenesForHost(
   sessionId: string,
   hostId: string,

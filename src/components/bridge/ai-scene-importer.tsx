@@ -38,15 +38,12 @@ export function AiSceneImporter({
   const [expectedPlayerCount, setExpectedPlayerCount] = useState(
     heroSlotCount > 0 ? heroSlotCount : 4,
   );
-  const [hostNotes, setHostNotes] = useState(
-    locale === "ru"
-      ? "Тон: реализм без магии. Финал: открытый. Минимум 3 типа кубиков. Живые tasks и NPC, без рутины. Минимум 1 CHECK с таблицей сюрприза (кусты, зверь, человек). Каждый герой — минимум в 2 сценах."
-      : "Tone: grounded realism, no magic. Open ending. At least 3 die types. Vivid tasks and NPCs, no chores. At least 1 CHECK with a surprise table (bushes, animal, person). Every hero in 2+ scenes.",
-  );
+  const [hostNotes, setHostNotes] = useState("");
   const [storyBrief, setStoryBrief] = useState("");
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [draftScenes, setDraftScenes] = useState<ImportedScene[]>([]);
+  const [draftMasterNotes, setDraftMasterNotes] = useState("");
   const [replaceExisting, setReplaceExisting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -82,6 +79,7 @@ export function AiSceneImporter({
       return;
     }
     setDraftScenes(result.scenes);
+    setDraftMasterNotes(result.masterNotes);
     setSuccess(t("draftReady", { count: result.scenes.length }));
   };
 
@@ -98,6 +96,7 @@ export function AiSceneImporter({
         body: JSON.stringify({
           mode:
             replaceExisting && existingSceneCount > 0 ? "replace" : "append",
+          masterNotes: draftMasterNotes,
           scenes: draftScenes,
         }),
       });
@@ -116,6 +115,7 @@ export function AiSceneImporter({
       }
 
       setDraftScenes([]);
+      setDraftMasterNotes("");
       setAiResponse("");
       setSuccess(t("scenesSaved"));
       onScenesSaved();
@@ -211,6 +211,7 @@ export function AiSceneImporter({
           value={hostNotes}
           onChange={(event) => setHostNotes(event.target.value)}
           rows={3}
+          placeholder={t("aiHostNotesPlaceholder")}
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
         />
       </label>
@@ -306,16 +307,8 @@ export function AiSceneImporter({
                     <option value={SceneType.CHECK}>
                       {t("sceneTypes.CHECK")}
                     </option>
-                    <option value={SceneType.NOTE}>
-                      {t("sceneTypes.NOTE")}
-                    </option>
                   </select>
                 </label>
-                {scene.type === SceneType.NOTE ? (
-                  <p className="text-xs text-muted">
-                    {t("noteSceneDraftHint")}
-                  </p>
-                ) : null}
                 <label className="block space-y-1">
                   <span className="text-xs text-muted">
                     {t("sceneContentRu")}

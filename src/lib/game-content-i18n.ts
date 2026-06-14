@@ -97,7 +97,9 @@ export const bilingualSceneBodySchema = z
   })
   .superRefine(refineBilingualBody);
 
-export const updateGameSchema = bilingualGameContentSchema;
+export const updateGameSchema = bilingualGameContentSchema.extend({
+  masterNotes: z.string().trim().optional().default(""),
+});
 
 export function pickLocalizedGameText(
   locale: string,
