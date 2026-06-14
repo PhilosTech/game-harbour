@@ -1,15 +1,15 @@
-import { db } from '@/lib/db';
+import { db } from "@/lib/db";
 
 export function slugify(text: string): string {
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
     .slice(0, 48);
 }
 
 export async function createUniqueGameSlug(baseTitle: string): Promise<string> {
-  const base = slugify(baseTitle) || 'game';
+  const base = slugify(baseTitle) || "game";
   let suffix = 0;
 
   while (suffix < 100) {

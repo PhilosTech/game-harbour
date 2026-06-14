@@ -6,10 +6,10 @@ Shared runtime for all games on Game Harbour. Game **content** lives in DB (temp
 
 ## Roles
 
-| Role | Access | Device |
-|------|--------|--------|
-| **Host** (professional) | Captain's Bridge + session console | Any |
-| **Player** | `/play/[code]` only | Mostly phone |
+| Role                    | Access                             | Device       |
+| ----------------------- | ---------------------------------- | ------------ |
+| **Host** (professional) | Captain's Bridge + session console | Any          |
+| **Player**              | `/play/[code]` only                | Mostly phone |
 
 Host is narrative authority. The app syncs state; it does not auto-play the story.
 
@@ -20,7 +20,7 @@ Host is narrative authority. The app syncs state; it does not auto-play the stor
 ```
 Host picks game -> creates LiveSession -> shares code
   -> Players join -> Lobby (hero, stats, Ready) -> Host starts game
-  -> [start scene | show/hide text | show/hide task | end scene | roll]* 
+  -> [start scene | show/hide text | show/hide task | end scene | roll]*
   -> Host ends session
 ```
 
@@ -30,36 +30,36 @@ Host picks game -> creates LiveSession -> shares code
 
 ```typescript
 type RoomEvent =
-  | { type: 'player_joined'; player: Player }
-  | { type: 'player_left'; playerId: string }
-  | { type: 'session_started' }
+  | { type: "player_joined"; player: Player }
+  | { type: "player_left"; playerId: string }
+  | { type: "session_started" }
   | {
-      type: 'scene_started';
+      type: "scene_started";
       sceneKey: string;
       sceneOrder: number;
       text: string;
       imageUrl?: string;
     }
-  | { type: 'scene_text_visibility'; visible: boolean }
+  | { type: "scene_text_visibility"; visible: boolean }
   | {
-      type: 'scene_task_visibility';
+      type: "scene_task_visibility";
       taskId: string;
       text: string;
       visible: boolean;
     }
-  | { type: 'scene_ended'; sceneKey: string }
+  | { type: "scene_ended"; sceneKey: string }
   | {
-      type: 'scene_broadcast'; // legacy; maps to activeScene with text visible
+      type: "scene_broadcast"; // legacy; maps to activeScene with text visible
       text: string;
       imageUrl?: string;
       playerTask?: string;
       sceneKey?: string;
       sceneOrder?: number;
     }
-  | { type: 'roll_requested'; request: RollRequest }
-  | { type: 'roll_result'; result: RollResult }
-  | { type: 'host_private_note'; text: string } // host UI only, never to players
-  | { type: 'session_ended' };
+  | { type: "roll_requested"; request: RollRequest }
+  | { type: "roll_result"; result: RollResult }
+  | { type: "host_private_note"; text: string } // host UI only, never to players
+  | { type: "session_ended" };
 ```
 
 Persist each event to `SessionEvent` table; clients catch up on reconnect.
@@ -71,13 +71,13 @@ type ActiveSceneState = {
   sceneKey: string;
   sceneOrder: number;
   imageUrl?: string;
-  text: string;           // stored but hidden until textVisible
+  text: string; // stored but hidden until textVisible
   textVisible: boolean;
   visibleTasks: { id: string; text: string }[];
 };
 
 type RoomState = {
-  phase: 'LOBBY' | 'ACTIVE' | 'ENDED';
+  phase: "LOBBY" | "ACTIVE" | "ENDED";
   players: PlayerSnapshot[];
   lobby: LobbySetupSnapshot;
   activeScene: ActiveSceneState | null;
@@ -96,11 +96,11 @@ type RoomState = {
 
 ## Dice (MVP)
 
-| Mechanic | Usage |
-|----------|--------|
-| d20 + modifier vs DC | Host sets DC, names skill |
-| Advantage / disadvantage | 2d20, take high/low |
-| Custom | `2d6+1` etc. |
+| Mechanic                 | Usage                     |
+| ------------------------ | ------------------------- |
+| d20 + modifier vs DC     | Host sets DC, names skill |
+| Advantage / disadvantage | 2d20, take high/low       |
+| Custom                   | `2d6+1` etc.              |
 
 Logic: `src/session-engine/dice.ts` - pure functions, unit tested.
 

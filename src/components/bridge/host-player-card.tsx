@@ -1,17 +1,21 @@
-'use client';
+"use client";
 
-import { PlayerNotesGrid } from '@/components/bridge/player-notes-grid';
-import { pickLocalizedGameText } from '@/lib/game-content-i18n';
-import type { PlayerNotesGrid as PlayerNotesGridValue } from '@/hooks/use-host-player-notes';
-import type { PlayerSnapshot } from '@/session-engine/room-events';
-import type { SessionSceneData } from '@/types/session-scene';
-import { useLocale, useTranslations } from 'next-intl';
+import { PlayerNotesGrid } from "@/components/bridge/player-notes-grid";
+import { pickLocalizedGameText } from "@/lib/game-content-i18n";
+import type { PlayerNotesGrid as PlayerNotesGridValue } from "@/hooks/use-host-player-notes";
+import type { PlayerSnapshot } from "@/session-engine/room-events";
+import type { SessionSceneData } from "@/types/session-scene";
+import { useLocale, useTranslations } from "next-intl";
 
 type HostPlayerCardProps = {
   player: PlayerSnapshot;
   scenes?: SessionSceneData[];
   notes?: PlayerNotesGridValue;
-  onNotesCellChange?: (rowIndex: number, sceneIndex: number, value: string) => void;
+  onNotesCellChange?: (
+    rowIndex: number,
+    sceneIndex: number,
+    value: string,
+  ) => void;
 };
 
 export function HostPlayerCard({
@@ -20,26 +24,26 @@ export function HostPlayerCard({
   notes,
   onNotesCellChange,
 }: HostPlayerCardProps) {
-  const t = useTranslations('session');
+  const t = useTranslations("session");
   const locale = useLocale();
   const character = player.character;
 
   let statusKey:
-    | 'playerReady'
-    | 'playerReviewing'
-    | 'playerChoosing'
-    | 'playerNoHero' = 'playerNoHero';
+    | "playerReady"
+    | "playerReviewing"
+    | "playerChoosing"
+    | "playerNoHero" = "playerNoHero";
 
   if (character?.isReady) {
-    statusKey = 'playerReady';
+    statusKey = "playerReady";
   } else if (
     character?.heroSlotId &&
     character.rolledTraits &&
     character.rolledTraits.length > 0
   ) {
-    statusKey = 'playerReviewing';
+    statusKey = "playerReviewing";
   } else if (character?.heroSlotId) {
-    statusKey = 'playerChoosing';
+    statusKey = "playerChoosing";
   }
 
   const showNotes = Boolean(scenes && notes && onNotesCellChange);
@@ -54,21 +58,25 @@ export function HostPlayerCard({
       {character?.heroSlotId ? (
         <div className="space-y-1 text-xs">
           <p>
-            {pickLocalizedGameText(locale, character.heroLabelRu, character.heroLabelEn)}
+            {pickLocalizedGameText(
+              locale,
+              character.heroLabelRu,
+              character.heroLabelEn,
+            )}
           </p>
           <p className="text-muted">
-            {t('strength')}:{' '}
+            {t("strength")}:{" "}
             {pickLocalizedGameText(
               locale,
               character.strengthTraitRu,
               character.strengthTraitEn,
-            )}{' '}
-            ({character.strengthValue}) · {t('weakness')}:{' '}
+            )}{" "}
+            ({character.strengthValue}) · {t("weakness")}:{" "}
             {pickLocalizedGameText(
               locale,
               character.weaknessTraitRu,
               character.weaknessTraitEn,
-            )}{' '}
+            )}{" "}
             ({character.weaknessValue})
           </p>
           {character.rolledTraits && character.rolledTraits.length > 0 ? (
@@ -78,7 +86,7 @@ export function HostPlayerCard({
                   key={trait.traitId}
                   className="rounded-md border border-border px-2 py-0.5"
                 >
-                  {pickLocalizedGameText(locale, trait.labelRu, trait.labelEn)}:{' '}
+                  {pickLocalizedGameText(locale, trait.labelRu, trait.labelEn)}:{" "}
                   {trait.value}
                 </li>
               ))}
@@ -89,7 +97,9 @@ export function HostPlayerCard({
 
       {showNotes && scenes && notes && onNotesCellChange ? (
         <div className="space-y-1.5">
-          <p className="text-xs font-medium text-muted">{t('playerNotesTitle')}</p>
+          <p className="text-xs font-medium text-muted">
+            {t("playerNotesTitle")}
+          </p>
           <PlayerNotesGrid
             scenes={scenes}
             value={notes}

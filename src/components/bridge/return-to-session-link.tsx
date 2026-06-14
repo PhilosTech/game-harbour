@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 type ReturnToSessionLinkProps = {
   href: string;
@@ -9,7 +9,7 @@ type ReturnToSessionLinkProps = {
 export function ReturnToSessionLink({
   href,
   label,
-  className = 'min-h-11 rounded-xl bg-accent px-4 text-sm font-semibold text-background hover:bg-accent-hover',
+  className = "min-h-11 rounded-xl bg-accent px-4 text-sm font-semibold text-background hover:bg-accent-hover",
 }: ReturnToSessionLinkProps) {
   return (
     <Link

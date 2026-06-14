@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { CharacterCard } from '@/components/player/character-card';
-import type { PlayerCharacterSnapshot } from '@/types/character';
-import { useTranslations } from 'next-intl';
-import { useEffect, useRef } from 'react';
+import { CharacterCard } from "@/components/player/character-card";
+import type { PlayerCharacterSnapshot } from "@/types/character";
+import { useTranslations } from "next-intl";
+import { useEffect, useRef } from "react";
 
 type MyCharacterModalProps = {
   character: PlayerCharacterSnapshot;
@@ -11,8 +11,12 @@ type MyCharacterModalProps = {
   onClose: () => void;
 };
 
-export function MyCharacterModal({ character, isOpen, onClose }: MyCharacterModalProps) {
-  const t = useTranslations('play');
+export function MyCharacterModal({
+  character,
+  isOpen,
+  onClose,
+}: MyCharacterModalProps) {
+  const t = useTranslations("play");
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -28,13 +32,13 @@ export function MyCharacterModal({ character, isOpen, onClose }: MyCharacterModa
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     };
 
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [isOpen, onClose]);
 
   if (!isOpen) {
@@ -56,16 +60,16 @@ export function MyCharacterModal({ character, isOpen, onClose }: MyCharacterModa
       >
         <div className="mb-4 flex items-center justify-between gap-2">
           <h2 id="my-character-title" className="text-lg font-semibold">
-            {t('myCharacterCard')}
+            {t("myCharacterCard")}
           </h2>
           <button
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
             className="min-h-10 rounded-lg border border-border px-3 text-sm"
-            aria-label={t('close')}
+            aria-label={t("close")}
           >
-            {t('close')}
+            {t("close")}
           </button>
         </div>
         <CharacterCard character={character} />

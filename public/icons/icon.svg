@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#0b1020"/>
+
+  <!-- GH letters behind the wheel -->
+  <g transform="translate(256,256) scale(1.12, 1.28) translate(-256,-256)">
+    <text x="256" y="256" text-anchor="middle" dominant-baseline="central" font-family="Georgia, 'Times New Roman', serif" font-size="440" font-weight="bold" fill="#d4a853" opacity="0.22" textLength="460" lengthAdjust="spacingAndGlyphs">GH</text>
+  </g>
+
+  <g transform="translate(256,256)" fill="#d4a853">
+    <!-- Outer ring -->
+    <circle cx="0" cy="0" r="148" fill="none" stroke="#d4a853" stroke-width="18"/>
+
+    <!-- 8 spokes with handles sticking OUT past the ring -->
+    <!-- Each spoke goes from inner hub (r=38) through ring (r=148) to handle tip (r=172) -->
+    <!-- Spoke lines -->
+    <line x1="0" y1="-38" x2="0" y2="-172" stroke="#d4a853" stroke-width="15" stroke-linecap="round"/>
+    <line x1="0" y1="38" x2="0" y2="172" stroke="#d4a853" stroke-width="15" stroke-linecap="round"/>
+    <line x1="-38" y1="0" x2="-172" y2="0" stroke="#d4a853" stroke-width="15" stroke-linecap="round"/>
+    <line x1="38" y1="0" x2="172" y2="0" stroke="#d4a853" stroke-width="15" stroke-linecap="round"/>
+
+    <!-- Diagonal spokes (45deg) -->
+    <line x1="-27" y1="-27" x2="-122" y2="-122" stroke="#d4a853" stroke-width="15" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="122" y2="122" stroke="#d4a853" stroke-width="15" stroke-linecap="round"/>
+    <line x1="27" y1="-27" x2="122" y2="-122" stroke="#d4a853" stroke-width="15" stroke-linecap="round"/>
+    <line x1="-27" y1="27" x2="-122" y2="122" stroke="#d4a853" stroke-width="15" stroke-linecap="round"/>
+
+    <!-- Handle knobs OUTSIDE the ring -->
+    <circle cx="0" cy="-172" r="16"/>
+    <circle cx="0" cy="172" r="16"/>
+    <circle cx="-172" cy="0" r="16"/>
+    <circle cx="172" cy="0" r="16"/>
+    <circle cx="-122" cy="-122" r="16"/>
+    <circle cx="122" cy="122" r="16"/>
+    <circle cx="122" cy="-122" r="16"/>
+    <circle cx="-122" cy="122" r="16"/>
+
+    <!-- Inner hub ring -->
+    <circle cx="0" cy="0" r="38" fill="none" stroke="#d4a853" stroke-width="16"/>
+    <!-- Center -->
+    <circle cx="0" cy="0" r="12"/>
+  </g>
+</svg>

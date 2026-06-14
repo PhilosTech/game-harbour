@@ -2,12 +2,12 @@
 
 ## Architecture
 
-| Service | Platform | Role |
-|---------|----------|------|
-| **Next.js app** (frontend + API) | **Vercel** | Pages, Route Handlers, Auth.js, Prisma |
-| **PostgreSQL** | **Neon** | Game templates, sessions, hosts |
-| **Object storage** | Cloudflare R2 or S3 | Game images (S3 API) |
-| **Realtime** (Phase 3) | **Render** | WebSocket server (Socket.io) - Vercel is not ideal for long-lived WS |
+| Service                          | Platform            | Role                                                                 |
+| -------------------------------- | ------------------- | -------------------------------------------------------------------- |
+| **Next.js app** (frontend + API) | **Vercel**          | Pages, Route Handlers, Auth.js, Prisma                               |
+| **PostgreSQL**                   | **Neon**            | Game templates, sessions, hosts                                      |
+| **Object storage**               | Cloudflare R2 or S3 | Game images (S3 API)                                                 |
+| **Realtime** (Phase 3)           | **Render**          | WebSocket server (Socket.io) - Vercel is not ideal for long-lived WS |
 
 ## Why Next.js API, not Express on Vercel
 

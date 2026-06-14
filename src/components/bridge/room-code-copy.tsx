@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useTranslations } from "next-intl";
+import { useCallback, useState } from "react";
 
 type RoomCodeCopyProps = {
   roomCode: string;
@@ -9,7 +9,7 @@ type RoomCodeCopyProps = {
 };
 
 export function RoomCodeCopy({ roomCode, label }: RoomCodeCopyProps) {
-  const t = useTranslations('session');
+  const t = useTranslations("session");
   const [copied, setCopied] = useState(false);
 
   const copyCode = useCallback(async () => {
@@ -29,7 +29,7 @@ export function RoomCodeCopy({ roomCode, label }: RoomCodeCopyProps) {
         type="button"
         onClick={copyCode}
         className="font-mono text-base font-bold tracking-widest hover:text-accent"
-        title={t('copyRoomCode')}
+        title={t("copyRoomCode")}
       >
         {roomCode}
       </button>
@@ -37,9 +37,9 @@ export function RoomCodeCopy({ roomCode, label }: RoomCodeCopyProps) {
         type="button"
         onClick={copyCode}
         className="min-h-8 rounded-md border border-border px-2.5 text-xs hover:border-accent"
-        aria-label={t('copyRoomCode')}
+        aria-label={t("copyRoomCode")}
       >
-        {copied ? t('roomCodeCopied') : t('copyRoomCode')}
+        {copied ? t("roomCodeCopied") : t("copyRoomCode")}
       </button>
     </span>
   );

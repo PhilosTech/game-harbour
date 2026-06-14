@@ -6,11 +6,11 @@
 
 Три зоны продукта:
 
-| Зона | Кто | Что делает |
-|------|-----|------------|
-| **Публичная гавань** | Все | Лендинг, каталог игр, вход игрока по ссылке/коду |
+| Зона                                 | Кто                      | Что делает                                             |
+| ------------------------------------ | ------------------------ | ------------------------------------------------------ |
+| **Публичная гавань**                 | Все                      | Лендинг, каталог игр, вход игрока по ссылке/коду       |
 | **Captain's Bridge** (Мастер-мостик) | Профессиональный ведущий | Библиотека игр, создание игр из шаблона, запуск сессии |
-| **Player Deck** (палуба игрока) | Игроки (~90% телефон) | Мобильный UI: сцена, действия, кубики, лист персонажа |
+| **Player Deck** (палуба игрока)      | Игроки (~90% телефон)    | Мобильный UI: сцена, действия, кубики, лист персонажа  |
 
 Ведущий **всегда один профессионал** с аккаунтом. Игроки заходят без регистрации (код/ссылка).
 
@@ -24,13 +24,13 @@
 
 Платформа - «место, где у ведущего много игр»:
 
-| Вариант | RU | EN | Комментарий |
-|---------|----|----|-------------|
-| **Game Harbour** | Игровая гавань | Game Harbour | Текущее repo-имя, метафора порта игр |
-| **Quest Harbour** | Гавань квестов | Quest Harbour | Акцент на приключения |
-| **Story Port** | Порт историй | Story Port | Короче, запоминается |
+| Вариант           | RU             | EN            | Комментарий                          |
+| ----------------- | -------------- | ------------- | ------------------------------------ |
+| **Game Harbour**  | Игровая гавань | Game Harbour  | Текущее repo-имя, метафора порта игр |
+| **Quest Harbour** | Гавань квестов | Quest Harbour | Акцент на приключения                |
+| **Story Port**    | Порт историй   | Story Port    | Короче, запоминается                 |
 
-Финальное имя: **Game Harbour** (британское написание *harbour*). Не использовать American *harbor* или вариант *GameHubber*.
+Финальное имя: **Game Harbour** (британское написание _harbour_). Не использовать American _harbor_ или вариант _GameHubber_.
 
 Английская локаль: **British English (en-GB)** - тексты в `messages/en.json`, URL остаётся `/en`.
 
@@ -55,23 +55,23 @@
 
 ## Tech Stack (full stack)
 
-| Layer | Choice | Why |
-|-------|--------|-----|
-| Frontend | **Next.js 15** (App Router) | SSR, API routes, PWA, i18n |
-| Language | **TypeScript** (strict) | Shared types client/server |
-| Styling | **Tailwind CSS 4** | Mobile-first, safe-area |
-| UI | **shadcn/ui** | Touch-friendly, accessible |
-| i18n | **next-intl** | RU + EN, locale routing `/ru`, `/en` |
-| ORM | **Prisma** | Migrations, type-safe queries |
-| Database | **PostgreSQL** | Games, templates, sessions, hosts |
-| Auth | **Auth.js (NextAuth v5)** | Login только для ведущих |
-| Object storage | **S3-compatible** (R2 / MinIO) | Covers, scene images, uploads |
-| Realtime | **Socket.io** + Redis adapter (or PartyKit) | Live session sync |
-| Cache / pubsub | **Redis** (optional Phase 3) | Room state, rate limits |
-| Client state | **Zustand** | Local UI state in session |
-| PWA | **Serwist** + `manifest.json` | Install on phone |
-| Testing | **Vitest** + **Testing Library** | Engine, API |
-| Local dev | **Docker Compose** | PostgreSQL + MinIO + Redis |
+| Layer          | Choice                                      | Why                                  |
+| -------------- | ------------------------------------------- | ------------------------------------ |
+| Frontend       | **Next.js 15** (App Router)                 | SSR, API routes, PWA, i18n           |
+| Language       | **TypeScript** (strict)                     | Shared types client/server           |
+| Styling        | **Tailwind CSS 4**                          | Mobile-first, safe-area              |
+| UI             | **shadcn/ui**                               | Touch-friendly, accessible           |
+| i18n           | **next-intl**                               | RU + EN, locale routing `/ru`, `/en` |
+| ORM            | **Prisma**                                  | Migrations, type-safe queries        |
+| Database       | **PostgreSQL**                              | Games, templates, sessions, hosts    |
+| Auth           | **Auth.js (NextAuth v5)**                   | Login только для ведущих             |
+| Object storage | **S3-compatible** (R2 / MinIO)              | Covers, scene images, uploads        |
+| Realtime       | **Socket.io** + Redis adapter (or PartyKit) | Live session sync                    |
+| Cache / pubsub | **Redis** (optional Phase 3)                | Room state, rate limits              |
+| Client state   | **Zustand**                                 | Local UI state in session            |
+| PWA            | **Serwist** + `manifest.json`               | Install on phone                     |
+| Testing        | **Vitest** + **Testing Library**            | Engine, API                          |
+| Local dev      | **Docker Compose**                          | PostgreSQL + MinIO + Redis           |
 
 ### Why not frontend-only
 
@@ -260,12 +260,12 @@ game-harbour/
 
 ## Open Questions
 
-| # | Question | Default |
-|---|----------|---------|
-| 1 | Финальное имя платформы | Game Harbour |
-| 2 | Hosting prod | Vercel + Neon PG + R2 (TBD) |
-| 3 | Max players | 8 |
-| 4 | Ведущих несколько в одной организации? | Один аккаунт = один ведущий (MVP) |
+| #   | Question                               | Default                           |
+| --- | -------------------------------------- | --------------------------------- |
+| 1   | Финальное имя платформы                | Game Harbour                      |
+| 2   | Hosting prod                           | Vercel + Neon PG + R2 (TBD)       |
+| 3   | Max players                            | 8                                 |
+| 4   | Ведущих несколько в одной организации? | Один аккаунт = один ведущий (MVP) |
 
 ---
 

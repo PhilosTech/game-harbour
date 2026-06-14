@@ -1,4 +1,4 @@
-import { getAiSceneJsonExample } from '@/lib/ai-scene-import';
+import { getAiSceneJsonExample } from "@/lib/ai-scene-import";
 
 export const AI_PLAYER_COUNT_MIN = 2;
 export const AI_PLAYER_COUNT_MAX = 8;
@@ -37,7 +37,7 @@ function pickLabel(
   item: { labelRu: string; labelEn: string },
   locale: string,
 ): string {
-  return locale === 'en'
+  return locale === "en"
     ? item.labelEn || item.labelRu
     : item.labelRu || item.labelEn;
 }
@@ -47,14 +47,14 @@ function formatList(
   locale: string,
 ): string {
   if (items.length === 0) {
-    return locale === 'ru'
-      ? '(пока не задано — придумай 4–5 универсальных характеристик под сеттинг)'
-      : '(not set yet — invent 4–5 universal traits that fit the setting)';
+    return locale === "ru"
+      ? "(пока не задано — придумай 4–5 универсальных характеристик под сеттинг)"
+      : "(not set yet — invent 4–5 universal traits that fit the setting)";
   }
 
   return items
     .map((item, index) => `${index + 1}. ${pickLabel(item, locale)}`)
-    .join('\n');
+    .join("\n");
 }
 
 function formatHeroSlots(slots: GamePromptHeroSlot[], locale: string): string {
@@ -69,12 +69,12 @@ function formatHeroSlots(slots: GamePromptHeroSlot[], locale: string): string {
         { labelRu: slot.weaknessTraitRu, labelEn: slot.weaknessTraitEn },
         locale,
       );
-      if (locale === 'ru') {
+      if (locale === "ru") {
         return `${index + 1}. ${role} — сильная сторона: ${strength} (+${slot.strengthValue} к проверкам роли), слабость: ${weakness} (${slot.weaknessValue}, ролевая уязвимость)`;
       }
       return `${index + 1}. ${role} — strength: ${strength} (+${slot.strengthValue} on role checks), weakness: ${weakness} (${slot.weaknessValue}, role flaw)`;
     })
-    .join('\n');
+    .join("\n");
 }
 
 function clampPlayerCount(count: number): number {
@@ -94,8 +94,8 @@ function buildStoryBriefBlock(storyBrief: string, isRu: boolean): string {
     return trimmed;
   }
   return isRu
-    ? '(не задано — выведи логичную трёхактную дугу из описания игры)'
-    : '(not set — infer a clear three-act arc from the game description)';
+    ? "(не задано — выведи логичную трёхактную дугу из описания игры)"
+    : "(not set — infer a clear three-act arc from the game description)";
 }
 
 function buildHostNotesBlock(hostNotes: string, isRu: boolean): string {
@@ -104,8 +104,8 @@ function buildHostNotesBlock(hostNotes: string, isRu: boolean): string {
     return trimmed;
   }
   return isRu
-    ? 'Тон и финал — на твоё усмотрение по описанию игры.'
-    : 'Tone and ending — follow the game description.';
+    ? "Тон и финал — на твоё усмотрение по описанию игры."
+    : "Tone and ending — follow the game description.";
 }
 
 function buildPlayersAndHeroesSection(
@@ -114,7 +114,9 @@ function buildPlayersAndHeroesSection(
   expectedPlayerCount: number,
 ): string {
   const hasHeroes = heroSlots.length > 0;
-  const playerCount = hasHeroes ? heroSlots.length : clampPlayerCount(expectedPlayerCount);
+  const playerCount = hasHeroes
+    ? heroSlots.length
+    : clampPlayerCount(expectedPlayerCount);
 
   if (isRu) {
     if (hasHeroes) {
@@ -122,7 +124,7 @@ function buildPlayersAndHeroesSection(
 
 В шаблоне задано **${playerCount}** слотов героев (фиксированные роли):
 
-${formatHeroSlots(heroSlots, 'ru')}
+${formatHeroSlots(heroSlots, "ru")}
 
 Правила вовлечённости:
 - Каждый герой — **минимум в 2 сценах** (task, CHECK или явный момент в hostOnlyNotes)
@@ -152,7 +154,7 @@ ${formatHeroSlots(heroSlots, 'ru')}
 
 The template defines **${playerCount}** hero slots (fixed roles):
 
-${formatHeroSlots(heroSlots, 'en')}
+${formatHeroSlots(heroSlots, "en")}
 
 Involvement rules:
 - Every hero — **at least 2 scenes** (task, CHECK, or clear beat in hostOnlyNotes)
@@ -160,7 +162,6 @@ Involvement rules:
 - 2+ heroes may share a scene; not everyone every scene
 - Use role names in tasks ("Journalist: …"); scenes must still work if the host renames a slot later
 - Game Harbour supports **${AI_PLAYER_COUNT_MIN}–${AI_PLAYER_COUNT_MAX}** players; target **${playerCount}** for this draft`;
-
   }
 
   return `## Players (no hero slots yet)
@@ -178,14 +179,18 @@ Rules without named heroes:
 Do not tie the plot to a single skill carrier.`;
 }
 
-function buildPlatformRules(isRu: boolean, traitMax: number, hasHeroes: boolean): string {
+function buildPlatformRules(
+  isRu: boolean,
+  traitMax: number,
+  hasHeroes: boolean,
+): string {
   const heroStrengthLine = hasHeroes
     ? isRu
-      ? '- **Сильная сторона героя** — фиксированный бонус роли (см. слоты), добавляется ведущим к уместным проверкам'
-      : '- **Hero strength** — fixed role bonus (see slots); host adds it to fitting checks'
+      ? "- **Сильная сторона героя** — фиксированный бонус роли (см. слоты), добавляется ведущим к уместным проверкам"
+      : "- **Hero strength** — fixed role bonus (see slots); host adds it to fitting checks"
     : isRu
-      ? '- **Роли героев** — пока не заданы; в CHECK указывай характеристики, не имена'
-      : '- **Hero roles** — not set yet; in CHECK refer to traits, not character names';
+      ? "- **Роли героев** — пока не заданы; в CHECK указывай характеристики, не имена"
+      : "- **Hero roles** — not set yet; in CHECK refer to traits, not character names";
 
   if (isRu) {
     return `## Платформа Game Harbour (важно)
@@ -430,8 +435,8 @@ function buildSelfCheckSection(
       ? `- [ ] Каждый из **${heroCount}** героев — минимум 2 сцены и 1 момент сильной стороны`
       : `- [ ] Each of **${heroCount}** heroes — 2+ scenes and 1 strength moment`
     : isRu
-      ? '- [ ] Нет жёстких имён; tasks работают для 2–8 игроков'
-      : '- [ ] No fixed names; tasks work for 2–8 players';
+      ? "- [ ] Нет жёстких имён; tasks работают для 2–8 игроков"
+      : "- [ ] No fixed names; tasks work for 2–8 players";
 
   if (isRu) {
     return `## Самопроверка перед ответом (обязательно)
@@ -478,8 +483,10 @@ export function buildAiScenePrompt(
   game: GamePromptContext,
   options: AiPromptOptions,
 ): string {
-  const isRu = options.uiLocale === 'ru';
-  const title = isRu ? game.titleRu || game.titleEn : game.titleEn || game.titleRu;
+  const isRu = options.uiLocale === "ru";
+  const title = isRu
+    ? game.titleRu || game.titleEn
+    : game.titleEn || game.titleRu;
   const description = isRu
     ? game.descriptionRu || game.descriptionEn
     : game.descriptionEn || game.descriptionRu;
@@ -541,7 +548,7 @@ ${buildStoryBriefBlock(options.storyBrief, true)}
 ${buildPlayersAndHeroesSection(true, game.heroSlots, expectedPlayerCount)}
 
 **Общие характеристики** (0–${traitMax} у каждого игрока на каждую):
-${formatList(game.traits, 'ru')}
+${formatList(game.traits, "ru")}
 
 ${buildPlatformRules(true, traitMax, hasHeroes)}
 
@@ -573,7 +580,7 @@ ${buildStoryBriefBlock(options.storyBrief, false)}
 ${buildPlayersAndHeroesSection(false, game.heroSlots, expectedPlayerCount)}
 
 **Shared traits** (0–${traitMax} per player per trait):
-${formatList(game.traits, 'en')}
+${formatList(game.traits, "en")}
 
 ${buildPlatformRules(false, traitMax, hasHeroes)}
 

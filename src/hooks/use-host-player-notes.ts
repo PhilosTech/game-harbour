@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export const PLAYER_NOTES_DATA_ROW_COUNT = 2;
 
@@ -8,15 +8,17 @@ export type PlayerNotesGrid = string[][];
 
 export type HostPlayerNotesState = Record<string, PlayerNotesGrid>;
 
-const STORAGE_PREFIX = 'game-harbour:host-player-notes';
+const STORAGE_PREFIX = "game-harbour:host-player-notes";
 
 function storageKey(sessionId: string) {
   return `${STORAGE_PREFIX}:${sessionId}`;
 }
 
-export function createEmptyPlayerNotesGrid(sceneCount: number): PlayerNotesGrid {
+export function createEmptyPlayerNotesGrid(
+  sceneCount: number,
+): PlayerNotesGrid {
   return Array.from({ length: PLAYER_NOTES_DATA_ROW_COUNT }, () =>
-    Array.from({ length: sceneCount }, () => ''),
+    Array.from({ length: sceneCount }, () => ""),
   );
 }
 
@@ -26,12 +28,15 @@ export function normalizePlayerNotesGrid(
 ): PlayerNotesGrid {
   return Array.from({ length: PLAYER_NOTES_DATA_ROW_COUNT }, (_, rowIndex) => {
     const row = grid?.[rowIndex] ?? [];
-    return Array.from({ length: sceneCount }, (_, colIndex) => row[colIndex] ?? '');
+    return Array.from(
+      { length: sceneCount },
+      (_, colIndex) => row[colIndex] ?? "",
+    );
   });
 }
 
 function readStoredNotes(sessionId: string): HostPlayerNotesState {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return {};
   }
 
@@ -41,14 +46,14 @@ function readStoredNotes(sessionId: string): HostPlayerNotesState {
       return {};
     }
     const parsed = JSON.parse(raw) as HostPlayerNotesState;
-    return parsed && typeof parsed === 'object' ? parsed : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
   } catch {
     return {};
   }
 }
 
 function writeStoredNotes(sessionId: string, state: HostPlayerNotesState) {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 
@@ -60,7 +65,7 @@ function writeStoredNotes(sessionId: string, state: HostPlayerNotesState) {
 }
 
 function removeStoredNotes(sessionId: string) {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 
@@ -82,7 +87,10 @@ export function useHostPlayerNotes(
     const next: HostPlayerNotesState = {};
 
     for (const playerId of playerIds) {
-      next[playerId] = normalizePlayerNotesGrid(notesByPlayer[playerId], sceneCount);
+      next[playerId] = normalizePlayerNotesGrid(
+        notesByPlayer[playerId],
+        sceneCount,
+      );
     }
 
     return next;

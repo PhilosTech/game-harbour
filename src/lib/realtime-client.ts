@@ -1,17 +1,17 @@
-import { io, type Socket } from 'socket.io-client';
-import type { RoomState } from '@/session-engine/room-events';
+import { io, type Socket } from "socket.io-client";
+import type { RoomState } from "@/session-engine/room-events";
 
 let socket: Socket | null = null;
 
 export function getRealtimeUrl(): string {
-  return process.env.NEXT_PUBLIC_REALTIME_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_REALTIME_URL ?? "http://localhost:3001";
 }
 
 export function getRealtimeSocket(): Socket {
   if (!socket) {
     socket = io(getRealtimeUrl(), {
       autoConnect: false,
-      transports: ['websocket', 'polling'],
+      transports: ["websocket", "polling"],
     });
   }
   return socket;

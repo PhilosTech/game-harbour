@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { FieldStatus } from '@/components/shared/field-status';
-import { storePlayerSession } from '@/lib/player-session-storage';
-import type { JoinErrorCode } from '@/lib/session-errors';
-import type { PlayerNameCheckStatus } from '@/types/player-name-check';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { FormEvent, useRef, useState } from 'react';
+import { FieldStatus } from "@/components/shared/field-status";
+import { storePlayerSession } from "@/lib/player-session-storage";
+import type { JoinErrorCode } from "@/lib/session-errors";
+import type { PlayerNameCheckStatus } from "@/types/player-name-check";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { FormEvent, useRef, useState } from "react";
 
 type JoinSuccess = {
   sessionId: string;
@@ -16,16 +16,16 @@ type JoinSuccess = {
   reconnected: boolean;
 };
 
-type NameCheckState = 'idle' | 'checking' | PlayerNameCheckStatus;
+type NameCheckState = "idle" | "checking" | PlayerNameCheckStatus;
 
 export function PlayJoinForm() {
-  const t = useTranslations('play');
+  const t = useTranslations("play");
   const locale = useLocale();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [errorCode, setErrorCode] = useState<JoinErrorCode | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [nameCheck, setNameCheck] = useState<NameCheckState>('idle');
+  const [nameCheck, setNameCheck] = useState<NameCheckState>("idle");
 
   const checkPlayerName = async () => {
     const form = formRef.current;
@@ -33,40 +33,43 @@ export function PlayJoinForm() {
       return;
     }
 
-    const roomCode = String(new FormData(form).get('code') ?? '').trim();
-    const displayName = String(new FormData(form).get('name') ?? '').trim();
+    const roomCode = String(new FormData(form).get("code") ?? "").trim();
+    const displayName = String(new FormData(form).get("name") ?? "").trim();
 
     if (!roomCode || !displayName) {
-      setNameCheck('idle');
+      setNameCheck("idle");
       return;
     }
 
-    setNameCheck('checking');
+    setNameCheck("checking");
 
     try {
-      const response = await fetch('/api/sessions/check-player-name', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/sessions/check-player-name", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ roomCode, displayName }),
       });
 
       const data = (await response.json()) as { status: PlayerNameCheckStatus };
       setNameCheck(data.status);
     } catch {
-      setNameCheck('idle');
+      setNameCheck("idle");
     }
   };
 
+  const isNameChecking = nameCheck === "checking";
+  const isJoinAllowed = nameCheck === "available" || nameCheck === "reconnect";
+
   const isJoinBlocked =
-    nameCheck === 'blocked' ||
-    nameCheck === 'session_not_found' ||
-    nameCheck === 'session_ended' ||
-    nameCheck === 'invalid_name';
+    nameCheck === "blocked" ||
+    nameCheck === "session_not_found" ||
+    nameCheck === "session_ended" ||
+    nameCheck === "invalid_name";
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (isJoinBlocked) {
+    if (!isJoinAllowed) {
       return;
     }
 
@@ -74,20 +77,20 @@ export function PlayJoinForm() {
     setErrorCode(null);
 
     const formData = new FormData(event.currentTarget);
-    const roomCode = String(formData.get('code') ?? '').trim();
-    const displayName = String(formData.get('name') ?? '').trim();
+    const roomCode = String(formData.get("code") ?? "").trim();
+    const displayName = String(formData.get("name") ?? "").trim();
 
     try {
-      const response = await fetch('/api/sessions/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/sessions/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ roomCode, displayName }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setErrorCode((data.code as JoinErrorCode) ?? 'UNKNOWN');
+        setErrorCode((data.code as JoinErrorCode) ?? "UNKNOWN");
         return;
       }
 
@@ -102,7 +105,7 @@ export function PlayJoinForm() {
 
       router.push(`/${locale}/play/room/${result.sessionId}`);
     } catch {
-      setErrorCode('UNKNOWN');
+      setErrorCode("UNKNOWN");
     } finally {
       setIsLoading(false);
     }
@@ -111,26 +114,26 @@ export function PlayJoinForm() {
   const errorMessage = errorCode ? t(`errors.${errorCode}`) : null;
 
   const nameCheckMessage =
-    nameCheck !== 'idle' && nameCheck !== 'checking'
+    nameCheck !== "idle" && nameCheck !== "checking"
       ? t(`nameCheck.${nameCheck}`)
       : null;
 
   const nameCheckTone =
-    nameCheck === 'available'
-      ? 'success'
-      : nameCheck === 'reconnect'
-        ? 'warning'
-        : nameCheck === 'blocked' ||
-            nameCheck === 'session_not_found' ||
-            nameCheck === 'session_ended' ||
-            nameCheck === 'invalid_name'
-          ? 'error'
-          : 'muted';
+    nameCheck === "available"
+      ? "success"
+      : nameCheck === "reconnect"
+        ? "warning"
+        : nameCheck === "blocked" ||
+            nameCheck === "session_not_found" ||
+            nameCheck === "session_ended" ||
+            nameCheck === "invalid_name"
+          ? "error"
+          : "muted";
 
   return (
     <form ref={formRef} onSubmit={onSubmit} className="space-y-4">
       <label className="block space-y-2">
-        <span className="text-sm text-muted">{t('enterCode')}</span>
+        <span className="text-sm text-muted">{t("enterCode")}</span>
         <input
           name="code"
           type="text"
@@ -140,7 +143,7 @@ export function PlayJoinForm() {
           maxLength={8}
           placeholder="ABC123"
           onBlur={() => {
-            if (formRef.current?.elements.namedItem('name')) {
+            if (formRef.current?.elements.namedItem("name")) {
               void checkPlayerName();
             }
           }}
@@ -148,7 +151,7 @@ export function PlayJoinForm() {
         />
       </label>
       <label className="block space-y-2">
-        <span className="text-sm text-muted">{t('yourName')}</span>
+        <span className="text-sm text-muted">{t("yourName")}</span>
         <input
           name="name"
           type="text"
@@ -158,26 +161,62 @@ export function PlayJoinForm() {
           onBlur={checkPlayerName}
           className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-accent"
         />
-        <p className="text-xs text-muted">{t('nameHint')}</p>
-        {nameCheck === 'checking' ? (
-          <FieldStatus tone="muted">{t('nameChecking')}</FieldStatus>
+        <p className="text-xs text-muted">{t("nameHint")}</p>
+        {nameCheck === "checking" ? (
+          <FieldStatus tone="muted">{t("nameChecking")}</FieldStatus>
         ) : null}
         {nameCheckMessage ? (
           <FieldStatus tone={nameCheckTone}>{nameCheckMessage}</FieldStatus>
         ) : null}
       </label>
       {errorMessage ? (
-        <p className="rounded-xl border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300" role="alert">
+        <p
+          className="rounded-xl border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300"
+          role="alert"
+        >
           {errorMessage}
         </p>
       ) : null}
-      <button
-        type="submit"
-        disabled={isLoading || isJoinBlocked}
-        className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-accent text-sm font-semibold text-background hover:bg-accent-hover disabled:opacity-60"
-      >
-        {isLoading ? '...' : t('join')}
-      </button>
+      <div className="space-y-2">
+        <button
+          type="submit"
+          disabled={isLoading || !isJoinAllowed}
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-accent text-sm font-semibold text-background disabled:opacity-40"
+        >
+          {isLoading || isNameChecking ? (
+            <svg
+              className="h-4 w-4 animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+          ) : null}
+          {isNameChecking ? t("nameChecking") : isLoading ? "..." : t("join")}
+        </button>
+        {isNameChecking ? (
+          <p className="text-center text-xs text-muted">
+            {t("nameCheckingHint")}
+          </p>
+        ) : nameCheck === "idle" ? (
+          <p className="text-center text-xs text-muted">
+            {t("nameCheckIdleHint")}
+          </p>
+        ) : null}
+      </div>
     </form>
   );
 }

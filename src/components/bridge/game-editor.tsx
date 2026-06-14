@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { AiSceneImporter } from '@/components/bridge/ai-scene-importer';
-import { ImageUploadField } from '@/components/bridge/image-upload-field';
+import { AiSceneImporter } from "@/components/bridge/ai-scene-importer";
+import { ImageUploadField } from "@/components/bridge/image-upload-field";
 import {
   GameSetupEditor,
   type SetupLabel,
-} from '@/components/bridge/game-setup-editor';
-import type { HeroSlotSetup } from '@/types/hero-slot-setup';
-import { pickLocalizedGameText } from '@/lib/game-content-i18n';
-import { SceneType } from '@prisma/client';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { FormEvent, useEffect, useState } from 'react';
+} from "@/components/bridge/game-setup-editor";
+import type { HeroSlotSetup } from "@/types/hero-slot-setup";
+import { pickLocalizedGameText } from "@/lib/game-content-i18n";
+import { SceneType } from "@prisma/client";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 
 type SceneTaskData = {
   id: string;
@@ -84,7 +84,7 @@ export function GameEditor({
   defaultWeaknessValue,
   scenes: initialScenes,
 }: GameEditorProps) {
-  const t = useTranslations('bridge');
+  const t = useTranslations("bridge");
   const locale = useLocale();
   const router = useRouter();
   const [scenes, setScenes] = useState(initialScenes);
@@ -95,8 +95,12 @@ export function GameEditor({
   }, [initialScenes]);
   const [metaSuccess, setMetaSuccess] = useState(false);
   const [isSavingMeta, setIsSavingMeta] = useState(false);
-  const [useEnglish, setUseEnglish] = useState(hasEnglishText(titleEn, descriptionEn));
-  const [useRussian, setUseRussian] = useState(hasRussianText(titleRu, descriptionRu));
+  const [useEnglish, setUseEnglish] = useState(
+    hasEnglishText(titleEn, descriptionEn),
+  );
+  const [useRussian, setUseRussian] = useState(
+    hasRussianText(titleRu, descriptionRu),
+  );
 
   const saveMetadata = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -104,25 +108,29 @@ export function GameEditor({
     setMetaSuccess(false);
 
     if (!useEnglish && !useRussian) {
-      setMetaError(t('languageRequired'));
+      setMetaError(t("languageRequired"));
       return;
     }
 
     const formData = new FormData(event.currentTarget);
     const payload = {
-      titleEn: useEnglish ? String(formData.get('titleEn') ?? '').trim() : '',
-      descriptionEn: useEnglish ? String(formData.get('descriptionEn') ?? '').trim() : '',
-      titleRu: useRussian ? String(formData.get('titleRu') ?? '').trim() : '',
-      descriptionRu: useRussian ? String(formData.get('descriptionRu') ?? '').trim() : '',
+      titleEn: useEnglish ? String(formData.get("titleEn") ?? "").trim() : "",
+      descriptionEn: useEnglish
+        ? String(formData.get("descriptionEn") ?? "").trim()
+        : "",
+      titleRu: useRussian ? String(formData.get("titleRu") ?? "").trim() : "",
+      descriptionRu: useRussian
+        ? String(formData.get("descriptionRu") ?? "").trim()
+        : "",
     };
 
     if (useEnglish && (!payload.titleEn || !payload.descriptionEn)) {
-      setMetaError(t('englishIncomplete'));
+      setMetaError(t("englishIncomplete"));
       return;
     }
 
     if (useRussian && (!payload.titleRu || !payload.descriptionRu)) {
-      setMetaError(t('russianIncomplete'));
+      setMetaError(t("russianIncomplete"));
       return;
     }
 
@@ -130,21 +138,28 @@ export function GameEditor({
 
     try {
       const response = await fetch(`/api/games/${gameId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const data = (await response.json()) as { code?: string; error?: string };
-        setMetaError(data.code ? t(`gameErrors.${data.code}`) : data.error ?? t('saveFailed'));
+        const data = (await response.json()) as {
+          code?: string;
+          error?: string;
+        };
+        setMetaError(
+          data.code
+            ? t(`gameErrors.${data.code}`)
+            : (data.error ?? t("saveFailed")),
+        );
         return;
       }
 
       setMetaSuccess(true);
       router.refresh();
     } catch {
-      setMetaError(t('saveFailed'));
+      setMetaError(t("saveFailed"));
     } finally {
       setIsSavingMeta(false);
     }
@@ -153,9 +168,9 @@ export function GameEditor({
   return (
     <div className="space-y-8">
       <section className="space-y-4 rounded-2xl border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">{t('editGameDetails')}</h2>
+        <h2 className="text-lg font-semibold">{t("editGameDetails")}</h2>
         <form onSubmit={saveMetadata} className="space-y-4">
-          <p className="text-sm text-muted">{t('languageSectionsHint')}</p>
+          <p className="text-sm text-muted">{t("languageSectionsHint")}</p>
 
           <section className="space-y-3 rounded-xl border border-border p-4">
             <label className="flex cursor-pointer items-center gap-3">
@@ -166,14 +181,14 @@ export function GameEditor({
                   if (useEnglish && !useRussian) return;
                   setUseEnglish((value) => !value);
                 }}
-                aria-label={t('includeEnglish')}
+                aria-label={t("includeEnglish")}
               />
-              <span className="text-sm font-medium">{t('englishSection')}</span>
+              <span className="text-sm font-medium">{t("englishSection")}</span>
             </label>
             {useEnglish ? (
               <div className="space-y-3 pl-7">
                 <label className="block space-y-2">
-                  <span className="text-sm text-muted">{t('titleEn')}</span>
+                  <span className="text-sm text-muted">{t("titleEn")}</span>
                   <input
                     name="titleEn"
                     defaultValue={titleEn}
@@ -182,7 +197,9 @@ export function GameEditor({
                   />
                 </label>
                 <label className="block space-y-2">
-                  <span className="text-sm text-muted">{t('descriptionEn')}</span>
+                  <span className="text-sm text-muted">
+                    {t("descriptionEn")}
+                  </span>
                   <textarea
                     name="descriptionEn"
                     defaultValue={descriptionEn}
@@ -204,14 +221,14 @@ export function GameEditor({
                   if (useRussian && !useEnglish) return;
                   setUseRussian((value) => !value);
                 }}
-                aria-label={t('includeRussian')}
+                aria-label={t("includeRussian")}
               />
-              <span className="text-sm font-medium">{t('russianSection')}</span>
+              <span className="text-sm font-medium">{t("russianSection")}</span>
             </label>
             {useRussian ? (
               <div className="space-y-3 pl-7">
                 <label className="block space-y-2">
-                  <span className="text-sm text-muted">{t('titleRu')}</span>
+                  <span className="text-sm text-muted">{t("titleRu")}</span>
                   <input
                     name="titleRu"
                     defaultValue={titleRu}
@@ -220,7 +237,9 @@ export function GameEditor({
                   />
                 </label>
                 <label className="block space-y-2">
-                  <span className="text-sm text-muted">{t('descriptionRu')}</span>
+                  <span className="text-sm text-muted">
+                    {t("descriptionRu")}
+                  </span>
                   <textarea
                     name="descriptionRu"
                     defaultValue={descriptionRu}
@@ -240,7 +259,7 @@ export function GameEditor({
           ) : null}
           {metaSuccess ? (
             <p className="text-sm text-emerald-300" role="status">
-              {t('saveSuccess')}
+              {t("saveSuccess")}
             </p>
           ) : null}
 
@@ -249,7 +268,7 @@ export function GameEditor({
             disabled={isSavingMeta}
             className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border px-5 text-sm font-medium hover:border-accent disabled:opacity-60"
           >
-            {isSavingMeta ? '...' : t('saveChanges')}
+            {isSavingMeta ? "..." : t("saveChanges")}
           </button>
         </form>
       </section>
@@ -280,13 +299,13 @@ export function GameEditor({
 
       <section className="space-y-4">
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold">{t('savedScenes')}</h2>
-          <p className="text-sm text-muted">{t('savedScenesHint')}</p>
+          <h2 className="text-lg font-semibold">{t("savedScenes")}</h2>
+          <p className="text-sm text-muted">{t("savedScenesHint")}</p>
         </div>
 
         {scenes.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-border p-5 text-sm text-muted">
-            {t('noScenesYet')}
+            {t("noScenesYet")}
           </p>
         ) : (
           <ul className="space-y-4">
@@ -298,12 +317,16 @@ export function GameEditor({
                 locale={locale}
                 onUpdated={(updated) => {
                   setScenes((current) =>
-                    current.map((item) => (item.id === updated.id ? updated : item)),
+                    current.map((item) =>
+                      item.id === updated.id ? updated : item,
+                    ),
                   );
                   router.refresh();
                 }}
                 onDeleted={(sceneId) => {
-                  setScenes((current) => current.filter((item) => item.id !== sceneId));
+                  setScenes((current) =>
+                    current.filter((item) => item.id !== sceneId),
+                  );
                   router.refresh();
                 }}
               />
@@ -323,8 +346,14 @@ type SceneCardProps = {
   onDeleted: (sceneId: string) => void;
 };
 
-function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardProps) {
-  const t = useTranslations('bridge');
+function SceneCard({
+  gameId,
+  scene,
+  locale,
+  onUpdated,
+  onDeleted,
+}: SceneCardProps) {
+  const t = useTranslations("bridge");
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -334,7 +363,7 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
   const [tasks, setTasks] = useState<SceneTaskForm[]>(() =>
     scene.tasks.map((task) => ({ textRu: task.textRu, textEn: task.textEn })),
   );
-  const [backgroundUrl, setBackgroundUrl] = useState(scene.imageUrl ?? '');
+  const [backgroundUrl, setBackgroundUrl] = useState(scene.imageUrl ?? "");
   const [illustrations, setIllustrations] = useState<IllustrationForm[]>(() =>
     (scene.illustrations ?? []).map((item) => ({
       clientId: item.id,
@@ -342,34 +371,48 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
     })),
   );
 
-  const preview = pickLocalizedGameText(locale, scene.contentRu, scene.contentEn);
+  const preview = pickLocalizedGameText(
+    locale,
+    scene.contentRu,
+    scene.contentEn,
+  );
 
   const addIllustration = () => {
     setIllustrations((current) => [
       ...current,
-      { clientId: crypto.randomUUID(), imageUrl: '' },
+      { clientId: crypto.randomUUID(), imageUrl: "" },
     ]);
   };
 
   const removeIllustration = (clientId: string) => {
-    setIllustrations((current) => current.filter((item) => item.clientId !== clientId));
+    setIllustrations((current) =>
+      current.filter((item) => item.clientId !== clientId),
+    );
   };
 
   const updateIllustration = (clientId: string, imageUrl: string) => {
     setIllustrations((current) =>
-      current.map((item) => (item.clientId === clientId ? { ...item, imageUrl } : item)),
+      current.map((item) =>
+        item.clientId === clientId ? { ...item, imageUrl } : item,
+      ),
     );
   };
 
   const addTask = () => {
-    setTasks((current) => [...current, { textRu: '', textEn: '' }]);
+    setTasks((current) => [...current, { textRu: "", textEn: "" }]);
   };
 
   const removeTask = (index: number) => {
-    setTasks((current) => current.filter((_, taskIndex) => taskIndex !== index));
+    setTasks((current) =>
+      current.filter((_, taskIndex) => taskIndex !== index),
+    );
   };
 
-  const updateTask = (index: number, field: keyof SceneTaskForm, value: string) => {
+  const updateTask = (
+    index: number,
+    field: keyof SceneTaskForm,
+    value: string,
+  ) => {
     setTasks((current) =>
       current.map((task, taskIndex) =>
         taskIndex === index ? { ...task, [field]: value } : task,
@@ -382,21 +425,25 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
     setError(null);
 
     if (!useEnglish && !useRussian) {
-      setError(t('sceneLanguageRequired'));
+      setError(t("sceneLanguageRequired"));
       return;
     }
 
     const formData = new FormData(event.currentTarget);
     const payload = {
-      type: String(formData.get('type')) as SceneType,
-      contentEn: useEnglish ? String(formData.get('contentEn') ?? '').trim() : '',
-      contentRu: useRussian ? String(formData.get('contentRu') ?? '').trim() : '',
-      hostOnlyNotes: String(formData.get('hostOnlyNotes') ?? '').trim(),
+      type: String(formData.get("type")) as SceneType,
+      contentEn: useEnglish
+        ? String(formData.get("contentEn") ?? "").trim()
+        : "",
+      contentRu: useRussian
+        ? String(formData.get("contentRu") ?? "").trim()
+        : "",
+      hostOnlyNotes: String(formData.get("hostOnlyNotes") ?? "").trim(),
       imageUrl: backgroundUrl.trim(),
       tasks: tasks
         .map((task) => ({
-          textRu: useRussian ? task.textRu.trim() : '',
-          textEn: useEnglish ? task.textEn.trim() : '',
+          textRu: useRussian ? task.textRu.trim() : "",
+          textEn: useEnglish ? task.textEn.trim() : "",
         }))
         .filter((task) => task.textRu || task.textEn),
       illustrations: illustrations
@@ -405,12 +452,12 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
     };
 
     if (useEnglish && !payload.contentEn) {
-      setError(t('englishSceneIncomplete'));
+      setError(t("englishSceneIncomplete"));
       return;
     }
 
     if (useRussian && !payload.contentRu) {
-      setError(t('russianSceneIncomplete'));
+      setError(t("russianSceneIncomplete"));
       return;
     }
 
@@ -418,14 +465,21 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
 
     try {
       const response = await fetch(`/api/games/${gameId}/scenes/${scene.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const data = (await response.json()) as { code?: string; error?: string };
-        setError(data.code ? t(`gameErrors.${data.code}`) : data.error ?? t('saveFailed'));
+        const data = (await response.json()) as {
+          code?: string;
+          error?: string;
+        };
+        setError(
+          data.code
+            ? t(`gameErrors.${data.code}`)
+            : (data.error ?? t("saveFailed")),
+        );
         return;
       }
 
@@ -433,7 +487,7 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
       onUpdated(updated);
       setIsOpen(false);
     } catch {
-      setError(t('saveFailed'));
+      setError(t("saveFailed"));
     } finally {
       setIsSaving(false);
     }
@@ -445,18 +499,25 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
 
     try {
       const response = await fetch(`/api/games/${gameId}/scenes/${scene.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        const data = (await response.json()) as { code?: string; error?: string };
-        setError(data.code ? t(`gameErrors.${data.code}`) : data.error ?? t('deleteFailed'));
+        const data = (await response.json()) as {
+          code?: string;
+          error?: string;
+        };
+        setError(
+          data.code
+            ? t(`gameErrors.${data.code}`)
+            : (data.error ?? t("deleteFailed")),
+        );
         return;
       }
 
       onDeleted(scene.id);
     } catch {
-      setError(t('deleteFailed'));
+      setError(t("deleteFailed"));
     } finally {
       setIsDeleting(false);
     }
@@ -477,7 +538,7 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
             onClick={() => setIsOpen((value) => !value)}
             className="min-h-11 rounded-xl border border-border px-4 text-sm hover:border-accent"
           >
-            {isOpen ? t('collapse') : t('edit')}
+            {isOpen ? t("collapse") : t("edit")}
           </button>
           <button
             type="button"
@@ -485,23 +546,26 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
             disabled={isDeleting}
             className="min-h-11 rounded-xl border border-red-900/50 px-4 text-sm text-red-300 hover:border-red-500 disabled:opacity-60"
           >
-            {isDeleting ? '...' : t('delete')}
+            {isDeleting ? "..." : t("delete")}
           </button>
         </div>
       </div>
 
       {isOpen ? (
-        <form onSubmit={saveScene} className="mt-4 space-y-4 border-t border-border pt-4">
+        <form
+          onSubmit={saveScene}
+          className="mt-4 space-y-4 border-t border-border pt-4"
+        >
           <label className="block space-y-2">
-            <span className="text-sm text-muted">{t('sceneType')}</span>
+            <span className="text-sm text-muted">{t("sceneType")}</span>
             <select
               name="type"
               defaultValue={scene.type}
               className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-accent"
             >
-              <option value={SceneType.STORY}>{t('sceneTypes.STORY')}</option>
-              <option value={SceneType.CHECK}>{t('sceneTypes.CHECK')}</option>
-              <option value={SceneType.NOTE}>{t('sceneTypes.NOTE')}</option>
+              <option value={SceneType.STORY}>{t("sceneTypes.STORY")}</option>
+              <option value={SceneType.CHECK}>{t("sceneTypes.CHECK")}</option>
+              <option value={SceneType.NOTE}>{t("sceneTypes.NOTE")}</option>
             </select>
           </label>
 
@@ -515,11 +579,13 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
                   setUseEnglish((value) => !value);
                 }}
               />
-              <span className="text-sm font-medium">{t('englishSection')}</span>
+              <span className="text-sm font-medium">{t("englishSection")}</span>
             </label>
             {useEnglish ? (
               <label className="block space-y-2 pl-7">
-                <span className="text-sm text-muted">{t('sceneContentEn')}</span>
+                <span className="text-sm text-muted">
+                  {t("sceneContentEn")}
+                </span>
                 <textarea
                   name="contentEn"
                   defaultValue={scene.contentEn}
@@ -541,11 +607,13 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
                   setUseRussian((value) => !value);
                 }}
               />
-              <span className="text-sm font-medium">{t('russianSection')}</span>
+              <span className="text-sm font-medium">{t("russianSection")}</span>
             </label>
             {useRussian ? (
               <label className="block space-y-2 pl-7">
-                <span className="text-sm text-muted">{t('sceneContentRu')}</span>
+                <span className="text-sm text-muted">
+                  {t("sceneContentRu")}
+                </span>
                 <textarea
                   name="contentRu"
                   defaultValue={scene.contentRu}
@@ -558,10 +626,10 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
           </section>
 
           <label className="block space-y-2">
-            <span className="text-sm text-muted">{t('hostOnlyNotes')}</span>
+            <span className="text-sm text-muted">{t("hostOnlyNotes")}</span>
             <textarea
               name="hostOnlyNotes"
-              defaultValue={scene.hostOnlyNotes ?? ''}
+              defaultValue={scene.hostOnlyNotes ?? ""}
               rows={4}
               maxLength={2000}
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
@@ -572,33 +640,42 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
             gameId={gameId}
             sceneId={scene.id}
             kind="background"
-            title={t('sceneBackground')}
-            hint={t('sceneBackgroundHint')}
+            title={t("sceneBackground")}
+            hint={t("sceneBackgroundHint")}
             value={backgroundUrl}
             onChange={setBackgroundUrl}
           />
 
           <section className="space-y-3 rounded-xl border border-border p-4">
             <div className="space-y-1">
-              <p className="text-sm font-medium">{t('sceneIllustrations')}</p>
-              <p className="text-xs text-muted">{t('sceneIllustrationsHint')}</p>
+              <p className="text-sm font-medium">{t("sceneIllustrations")}</p>
+              <p className="text-xs text-muted">
+                {t("sceneIllustrationsHint")}
+              </p>
             </div>
             {illustrations.length === 0 ? (
-              <p className="text-xs text-muted">{t('sceneIllustrationsEmpty')}</p>
+              <p className="text-xs text-muted">
+                {t("sceneIllustrationsEmpty")}
+              </p>
             ) : (
               <ul className="space-y-3">
                 {illustrations.map((illustration, index) => (
-                  <li key={illustration.clientId} className="rounded-xl border border-border p-3">
+                  <li
+                    key={illustration.clientId}
+                    className="rounded-xl border border-border p-3"
+                  >
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <span className="text-xs font-medium text-muted">
-                        {t('sceneIllustrationNumber', { number: index + 1 })}
+                        {t("sceneIllustrationNumber", { number: index + 1 })}
                       </span>
                       <button
                         type="button"
-                        onClick={() => removeIllustration(illustration.clientId)}
+                        onClick={() =>
+                          removeIllustration(illustration.clientId)
+                        }
                         className="text-xs text-red-300 hover:text-red-200"
                       >
-                        {t('removeSceneIllustration')}
+                        {t("removeSceneIllustration")}
                       </button>
                     </div>
                     <ImageUploadField
@@ -606,9 +683,13 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
                       sceneId={scene.id}
                       kind="illustration"
                       assetId={illustration.clientId}
-                      title={t('sceneIllustrationNumber', { number: index + 1 })}
+                      title={t("sceneIllustrationNumber", {
+                        number: index + 1,
+                      })}
                       value={illustration.imageUrl}
-                      onChange={(url) => updateIllustration(illustration.clientId, url)}
+                      onChange={(url) =>
+                        updateIllustration(illustration.clientId, url)
+                      }
                       compact
                     />
                   </li>
@@ -621,50 +702,57 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
               disabled={illustrations.length >= 20}
               className="min-h-9 rounded-lg border border-border px-3 text-xs hover:border-accent disabled:opacity-50"
             >
-              {t('addSceneIllustration')}
+              {t("addSceneIllustration")}
             </button>
           </section>
 
           <section className="space-y-3 rounded-xl border border-border p-4">
             <div className="space-y-1">
-              <p className="text-sm font-medium">{t('sceneTasks')}</p>
-              <p className="text-xs text-muted">{t('playerTaskHint')}</p>
+              <p className="text-sm font-medium">{t("sceneTasks")}</p>
+              <p className="text-xs text-muted">{t("playerTaskHint")}</p>
             </div>
             {tasks.length === 0 ? (
-              <p className="text-xs text-muted">{t('playerTask')}</p>
+              <p className="text-xs text-muted">{t("playerTask")}</p>
             ) : (
               <ul className="space-y-3">
                 {tasks.map((task, index) => (
-                  <li key={index} className="space-y-2 rounded-xl border border-border p-3">
+                  <li
+                    key={index}
+                    className="space-y-2 rounded-xl border border-border p-3"
+                  >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs font-medium text-muted">
-                        {t('playerTask')} {index + 1}
+                        {t("playerTask")} {index + 1}
                       </span>
                       <button
                         type="button"
                         onClick={() => removeTask(index)}
                         className="text-xs text-red-300 hover:text-red-200"
                       >
-                        {t('removeSceneTask')}
+                        {t("removeSceneTask")}
                       </button>
                     </div>
                     {useRussian ? (
                       <textarea
                         value={task.textRu}
-                        onChange={(event) => updateTask(index, 'textRu', event.target.value)}
+                        onChange={(event) =>
+                          updateTask(index, "textRu", event.target.value)
+                        }
                         rows={2}
                         maxLength={2000}
-                        placeholder={t('playerTaskRu')}
+                        placeholder={t("playerTaskRu")}
                         className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
                       />
                     ) : null}
                     {useEnglish ? (
                       <textarea
                         value={task.textEn}
-                        onChange={(event) => updateTask(index, 'textEn', event.target.value)}
+                        onChange={(event) =>
+                          updateTask(index, "textEn", event.target.value)
+                        }
                         rows={2}
                         maxLength={2000}
-                        placeholder={t('playerTaskEn')}
+                        placeholder={t("playerTaskEn")}
                         className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
                       />
                     ) : null}
@@ -678,7 +766,7 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
               disabled={tasks.length >= 20}
               className="min-h-9 rounded-lg border border-border px-3 text-xs hover:border-accent disabled:opacity-50"
             >
-              {t('addSceneTask')}
+              {t("addSceneTask")}
             </button>
           </section>
 
@@ -693,7 +781,7 @@ function SceneCard({ gameId, scene, locale, onUpdated, onDeleted }: SceneCardPro
             disabled={isSaving}
             className="inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-5 text-sm font-semibold text-background disabled:opacity-60"
           >
-            {isSaving ? '...' : t('saveScene')}
+            {isSaving ? "..." : t("saveScene")}
           </button>
         </form>
       ) : null}

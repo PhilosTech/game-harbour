@@ -1,12 +1,12 @@
-import bcrypt from 'bcryptjs';
-import { z } from 'zod';
-import { db } from '@/lib/db';
+import bcrypt from "bcryptjs";
+import { z } from "zod";
+import { db } from "@/lib/db";
 
 export const usernameSchema = z
   .string()
   .min(3)
   .max(32)
-  .regex(/^[a-zA-Z0-9_-]+$/, 'Username: letters, numbers, _ and - only');
+  .regex(/^[a-zA-Z0-9_-]+$/, "Username: letters, numbers, _ and - only");
 
 export const registerHostSchema = z.object({
   username: usernameSchema,
@@ -21,17 +21,17 @@ export const resetPasswordSchema = z
     confirmPassword: z.string().min(8).max(128),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
   });
 
 export class HostError extends Error {
   constructor(
     message: string,
-    public code: 'TAKEN' | 'DISABLED' | 'INVALID' | 'NOT_FOUND',
+    public code: "TAKEN" | "DISABLED" | "INVALID" | "NOT_FOUND",
   ) {
     super(message);
-    this.name = 'HostError';
+    this.name = "HostError";
   }
 }
 
@@ -40,8 +40,8 @@ export function normalizeUsername(username: string): string {
 }
 
 export async function registerHost(input: z.infer<typeof registerHostSchema>) {
-  if (process.env.ALLOW_HOST_REGISTRATION === 'false') {
-    throw new HostError('Registration is disabled', 'DISABLED');
+  if (process.env.ALLOW_HOST_REGISTRATION === "false") {
+    throw new HostError("Registration is disabled", "DISABLED");
   }
 
   const data = registerHostSchema.parse(input);
@@ -53,7 +53,7 @@ export async function registerHost(input: z.infer<typeof registerHostSchema>) {
   });
 
   if (existing) {
-    throw new HostError('Username is already taken', 'TAKEN');
+    throw new HostError("Username is already taken", "TAKEN");
   }
 
   const passwordHash = await bcrypt.hash(data.password, 12);
@@ -63,7 +63,7 @@ export async function registerHost(input: z.infer<typeof registerHostSchema>) {
       username,
       displayName: data.displayName?.trim() || username,
       passwordHash,
-      role: 'HOST',
+      role: "HOST",
     },
     select: {
       id: true,
@@ -105,7 +105,7 @@ export async function resetHostPassword(
   });
 
   if (!user) {
-    throw new HostError('Username not found', 'NOT_FOUND');
+    throw new HostError("Username not found", "NOT_FOUND");
   }
 
   const passwordHash = await bcrypt.hash(data.password, 12);

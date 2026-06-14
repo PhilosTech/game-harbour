@@ -82,11 +82,11 @@ export function createEmptyHeroSlot(
   return {
     labelRu,
     labelEn,
-    strengthTraitRu: '',
-    strengthTraitEn: '',
+    strengthTraitRu: "",
+    strengthTraitEn: "",
     strengthValue,
-    weaknessTraitRu: '',
-    weaknessTraitEn: '',
+    weaknessTraitRu: "",
+    weaknessTraitEn: "",
     weaknessValue,
   };
 }

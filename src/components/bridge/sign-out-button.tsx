@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { signOut } from 'next-auth/react';
-import { useLocale, useTranslations } from 'next-intl';
+import { signOut } from "next-auth/react";
+import { useLocale, useTranslations } from "next-intl";
 
 export function SignOutButton() {
-  const t = useTranslations('bridge');
+  const t = useTranslations("bridge");
   const locale = useLocale();
 
   return (
@@ -13,7 +13,7 @@ export function SignOutButton() {
       onClick={() => signOut({ callbackUrl: `/${locale}/bridge/login` })}
       className="min-h-11 rounded-xl border border-border px-4 text-sm hover:border-accent"
     >
-      {t('signOut')}
+      {t("signOut")}
     </button>
   );
 }

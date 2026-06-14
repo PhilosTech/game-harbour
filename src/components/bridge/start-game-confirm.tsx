@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 
 type StartGameConfirmProps = {
   playerCount: number;
@@ -19,7 +19,7 @@ export function StartGameConfirm({
   onCancel,
   onConfirm,
 }: StartGameConfirmProps) {
-  const t = useTranslations('session');
+  const t = useTranslations("session");
 
   if (!isOpen) {
     return null;
@@ -41,11 +41,15 @@ export function StartGameConfirm({
         onClick={(event) => event.stopPropagation()}
       >
         <h2 id="start-game-title" className="text-lg font-semibold">
-          {t('startConfirmTitle')}
+          {t("startConfirmTitle")}
         </h2>
-        <p className="text-sm text-muted">{t('startConfirmBody', { count: playerCount })}</p>
+        <p className="text-sm text-muted">
+          {t("startConfirmBody", { count: playerCount })}
+        </p>
         {notReadyCount > 0 ? (
-          <p className="text-sm text-amber-300">{t('startConfirmNotReady', { count: notReadyCount })}</p>
+          <p className="text-sm text-amber-300">
+            {t("startConfirmNotReady", { count: notReadyCount })}
+          </p>
         ) : null}
         <div className="flex flex-wrap gap-2">
           <button
@@ -54,7 +58,7 @@ export function StartGameConfirm({
             disabled={isStarting}
             className="min-h-11 flex-1 rounded-xl bg-accent px-4 text-sm font-semibold text-background disabled:opacity-50"
           >
-            {isStarting ? '...' : t('startConfirmYes')}
+            {isStarting ? "..." : t("startConfirmYes")}
           </button>
           <button
             type="button"
@@ -62,7 +66,7 @@ export function StartGameConfirm({
             disabled={isStarting}
             className="min-h-11 flex-1 rounded-xl border border-border px-4 text-sm disabled:opacity-50"
           >
-            {t('startConfirmNo')}
+            {t("startConfirmNo")}
           </button>
         </div>
       </div>

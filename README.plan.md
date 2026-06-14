@@ -16,9 +16,9 @@ Next.js, PostgreSQL, Prisma, S3 storage, Auth.js, next-intl (RU/EN), PWA.
 
 ## Docs
 
-| File | Purpose |
-|------|---------|
-| [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) | Architecture, DB, storage, i18n, phases |
-| [docs/session-engine.md](docs/session-engine.md) | Host/Player session runtime |
-| [docs/games/el-dorado.md](docs/games/el-dorado.md) | First game design |
-| [.cursor/rules/](.cursor/rules/) | AI rules |
+| File                                               | Purpose                                 |
+| -------------------------------------------------- | --------------------------------------- |
+| [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md)       | Architecture, DB, storage, i18n, phases |
+| [docs/session-engine.md](docs/session-engine.md)   | Host/Player session runtime             |
+| [docs/games/el-dorado.md](docs/games/el-dorado.md) | First game design                       |
+| [.cursor/rules/](.cursor/rules/)                   | AI rules                                |

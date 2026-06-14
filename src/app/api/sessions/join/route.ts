@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
-import { mapSessionErrorCode } from '@/lib/session-errors';
-import { joinSession, SessionError } from '@/server/sessions';
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { mapSessionErrorCode } from "@/lib/session-errors";
+import { joinSession, SessionError } from "@/server/sessions";
 
 const joinSchema = z.object({
   roomCode: z.string().min(4).max(8),
@@ -16,9 +16,9 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof SessionError) {
       const status =
-        error.code === 'NOT_FOUND'
+        error.code === "NOT_FOUND"
           ? 404
-          : error.code === 'NAME_NOT_IN_SESSION'
+          : error.code === "NAME_NOT_IN_SESSION"
             ? 403
             : 400;
 
@@ -32,12 +32,12 @@ export async function POST(request: Request) {
     }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { code: 'INVALID_INPUT', error: 'Invalid payload' },
+        { code: "INVALID_INPUT", error: "Invalid payload" },
         { status: 400 },
       );
     }
     return NextResponse.json(
-      { code: 'UNKNOWN', error: 'Internal error' },
+      { code: "UNKNOWN", error: "Internal error" },
       { status: 500 },
     );
   }

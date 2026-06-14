@@ -1,4 +1,4 @@
-import type { SceneType } from '@prisma/client';
+import type { SceneType } from "@prisma/client";
 
 export type SessionSceneTaskData = {
   id: string;

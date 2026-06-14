@@ -15,10 +15,10 @@ Related:
 
 A **game** is a reusable template (`GameTemplate` + `GameScene[]`) that a host runs many times as separate **live sessions** (room code, players, dice, log).
 
-| Layer | Stored where | Purpose |
-|-------|----------------|---------|
-| **Game template** | PostgreSQL | Title, description, scenes, cover, visibility |
-| **Live session** | PostgreSQL + Socket.io | One play-through with real players |
+| Layer             | Stored where           | Purpose                                       |
+| ----------------- | ---------------------- | --------------------------------------------- |
+| **Game template** | PostgreSQL             | Title, description, scenes, cover, visibility |
+| **Live session**  | PostgreSQL + Socket.io | One play-through with real players            |
 
 The app does **not** auto-play the story. The host reads scenes, improvises, requests rolls. The template is a **script + cue cards**, not a video game quest engine.
 
@@ -28,18 +28,18 @@ The app does **not** auto-play the story. The host reads scenes, improvises, req
 
 ## Three ways to get a game
 
-| Path | Who | Result |
-|------|-----|--------|
-| **1. Blank** | Host | Empty template: metadata only, host adds scenes in editor |
-| **2. Copy system template** | Host | Full copy of e.g. El Dorado into «My games» (private draft), then edit |
-| **3. Play community game** | Any host | No copy - only **Start session** on someone else's **public** game |
+| Path                        | Who      | Result                                                                 |
+| --------------------------- | -------- | ---------------------------------------------------------------------- |
+| **1. Blank**                | Host     | Empty template: metadata only, host adds scenes in editor              |
+| **2. Copy system template** | Host     | Full copy of e.g. El Dorado into «My games» (private draft), then edit |
+| **3. Play community game**  | Any host | No copy - only **Start session** on someone else's **public** game     |
 
 **Visibility** (separate from path):
 
-| Setting | Meaning |
-|---------|---------|
-| **Private** | Only in author's «My games» |
-| **Public** | Also in «Community games» for all hosts; can start a session. **One-way**: private → public only |
+| Setting     | Meaning                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------ |
+| **Private** | Only in author's «My games»                                                                      |
+| **Public**  | Also in «Community games» for all hosts; can start a session. **One-way**: private → public only |
 
 **Status** (`DRAFT` / `PUBLISHED`) - reserved for «ready to run» quality gate later. MVP: host can start a session on own games even in `DRAFT`. System templates use `PUBLISHED`.
 
@@ -49,41 +49,41 @@ The app does **not** auto-play the story. The host reads scenes, improvises, req
 
 ### Game template (required)
 
-| Field | Required | Notes |
-|-------|----------|-------|
-| `titleRu`, `titleEn` | Per language | See bilingual rules below |
-| `descriptionRu`, `descriptionEn` | Per language | Pitch for dashboard / community list |
-| `coverUrl` | No | Card image; upload later (MinIO/R2) |
-| `visibility` | Yes | Default `PRIVATE` |
-| `scenes` | Yes (≥1) | **Blocked** for start session and publish until ≥1 scene |
+| Field                            | Required     | Notes                                                    |
+| -------------------------------- | ------------ | -------------------------------------------------------- |
+| `titleRu`, `titleEn`             | Per language | See bilingual rules below                                |
+| `descriptionRu`, `descriptionEn` | Per language | Pitch for dashboard / community list                     |
+| `coverUrl`                       | No           | Card image; upload later (MinIO/R2)                      |
+| `visibility`                     | Yes          | Default `PRIVATE`                                        |
+| `scenes`                         | Yes (≥1)     | **Blocked** for start session and publish until ≥1 scene |
 
 ### Bilingual content (decided)
 
 Hosts may write in **English only**, **Russian only**, or **both**.
 
-| Rule | Behaviour |
-|------|-----------|
-| At least one language | Required |
-| If any field filled in a language | Title **and** description required for that language |
-| Unused language | Empty strings in DB; section hidden in form |
-| Form order | **English block first**, then Russian |
-| Form UX | Checkbox per language - hide blocks you do not need |
-| Display | UI locale first; fallback to the other language if empty |
+| Rule                              | Behaviour                                                |
+| --------------------------------- | -------------------------------------------------------- |
+| At least one language             | Required                                                 |
+| If any field filled in a language | Title **and** description required for that language     |
+| Unused language                   | Empty strings in DB; section hidden in form              |
+| Form order                        | **English block first**, then Russian                    |
+| Form UX                           | Checkbox per language - hide blocks you do not need      |
+| Display                           | UI locale first; fallback to the other language if empty |
 
 Helper: `src/lib/game-content-i18n.ts` (`pickLocalizedGameText`, `bilingualGameContentSchema`).
 
 ### Per scene (required)
 
-| Field | Required | Notes |
-|-------|----------|-------|
-| `sceneKey` | Yes | Stable id, e.g. `briefing`, `rapids` (latin, no spaces) |
-| `order` | Yes | Sort order in host scene picker (1, 2, 3…) |
-| `type` | Yes | See scene types below |
-| `contentRu`, `contentEn` | Per language | Same bilingual rules as game metadata |
-| `hostOnlyNotes` | No | Spoilers, DC hints, NPC names - **never** sent to players |
-| `imageUrl` | No | Scene **background**; shown when host **starts** the scene |
-| `illustrations` (`GameSceneIllustration[]`) | No | 0-20 pictures per scene; host reveals each separately (background stays) |
-| `tasks` (`GameSceneTask[]`) | No | 0-20 short tasks per scene; host reveals each separately during play |
+| Field                                       | Required     | Notes                                                                    |
+| ------------------------------------------- | ------------ | ------------------------------------------------------------------------ |
+| `sceneKey`                                  | Yes          | Stable id, e.g. `briefing`, `rapids` (latin, no spaces)                  |
+| `order`                                     | Yes          | Sort order in host scene picker (1, 2, 3…)                               |
+| `type`                                      | Yes          | See scene types below                                                    |
+| `contentRu`, `contentEn`                    | Per language | Same bilingual rules as game metadata                                    |
+| `hostOnlyNotes`                             | No           | Spoilers, DC hints, NPC names - **never** sent to players                |
+| `imageUrl`                                  | No           | Scene **background**; shown when host **starts** the scene               |
+| `illustrations` (`GameSceneIllustration[]`) | No           | 0-20 pictures per scene; host reveals each separately (background stays) |
+| `tasks` (`GameSceneTask[]`)                 | No           | 0-20 short tasks per scene; host reveals each separately during play     |
 
 ### Acts (optional, MVP)
 
@@ -93,22 +93,22 @@ Helper: `src/lib/game-content-i18n.ts` (`pickLocalizedGameText`, `bilingualGameC
 
 ## Scene types (`SceneType`)
 
-| Type | Host use | Player sees |
-|------|----------|-------------|
-| **STORY** | Narrative beat | Background on scene start; text when host toggles **Show text**; tasks when host shows each task |
-| **CHECK** | Moment for dice / skill check | Same staged reveal as STORY; host uses dice console |
-| **NOTE** | Reference only (rules, endings list, NPC roster) | Nothing - NOTE scenes are not started for players |
+| Type      | Host use                                         | Player sees                                                                                      |
+| --------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| **STORY** | Narrative beat                                   | Background on scene start; text when host toggles **Show text**; tasks when host shows each task |
+| **CHECK** | Moment for dice / skill check                    | Same staged reveal as STORY; host uses dice console                                              |
+| **NOTE**  | Reference only (rules, endings list, NPC roster) | Nothing - NOTE scenes are not started for players                                                |
 
 CHECK/NOTE are labels for the host. Later: CHECK could pre-fill roll UI (skill name, suggested DC).
 
 ### Scene play flow (live session)
 
-| Host action | Player UI |
-|-------------|-----------|
-| **Start scene** | «Scene N started» + `imageUrl` if set; no text or tasks yet |
-| **Show / hide text** | `content` visible or hidden |
-| **Show / hide task** (per task) | That task's localized text visible or hidden |
-| **End scene** | Scene marked done in host progress table; `activeScene` cleared |
+| Host action                     | Player UI                                                       |
+| ------------------------------- | --------------------------------------------------------------- |
+| **Start scene**                 | «Scene N started» + `imageUrl` if set; no text or tasks yet     |
+| **Show / hide text**            | `content` visible or hidden                                     |
+| **Show / hide task** (per task) | That task's localized text visible or hidden                    |
+| **End scene**                   | Scene marked done in host progress table; `activeScene` cleared |
 
 Host console shows a **scene progress table** (pending / active / done) for all template scenes.
 
@@ -132,11 +132,11 @@ Example: [el-dorado.md](./el-dorado.md).
 
 From product vision (hosts can deviate in own games):
 
-| Encouraged | Discouraged in official templates |
-|------------|-----------------------------------|
-| Real places, people, logistics | Magic, curses, monsters |
-| Moral choices, rivalry | Supernatural as fact |
-| Skill checks, uncertainty | Full D&D ruleset |
+| Encouraged                     | Discouraged in official templates |
+| ------------------------------ | --------------------------------- |
+| Real places, people, logistics | Magic, curses, monsters           |
+| Moral choices, rivalry         | Supernatural as fact              |
+| Skill checks, uncertainty      | Full D&D ruleset                  |
 
 ---
 
@@ -190,54 +190,54 @@ Player characters: see [shablon-igry.ru.md](./shablon-igry.ru.md) (RU product sp
 
 ## Implementation status
 
-| Feature | Status |
-|---------|--------|
-| Create game metadata | Done |
-| Flexible bilingual form (EN first) | Done |
-| Block session / publish without scenes | Done |
-| Private / public visibility | Done |
-| Publish private → public | Done |
-| Public games not editable | Rule + server guard (`assertGameIsEditable`) |
-| Duplicate system template | Done |
-| Community games list | Done |
-| Game editor (scenes CRUD) | Done (private games only) |
-| Scene tasks (multiple per scene) | Done |
-| Scene image URL in editor | Done |
-| Hero roster in template | Done |
-| Traits + point generation | Done |
-| Player character card UI | Done |
-| Staged scene play (start / text / tasks / progress) | Done |
-| Scene image upload (MinIO) | Done |
-| Cover image upload | **Not started** |
-| Acts in DB | **Not planned for MVP** |
-| Auto branching | **Out of scope** |
+| Feature                                             | Status                                       |
+| --------------------------------------------------- | -------------------------------------------- |
+| Create game metadata                                | Done                                         |
+| Flexible bilingual form (EN first)                  | Done                                         |
+| Block session / publish without scenes              | Done                                         |
+| Private / public visibility                         | Done                                         |
+| Publish private → public                            | Done                                         |
+| Public games not editable                           | Rule + server guard (`assertGameIsEditable`) |
+| Duplicate system template                           | Done                                         |
+| Community games list                                | Done                                         |
+| Game editor (scenes CRUD)                           | Done (private games only)                    |
+| Scene tasks (multiple per scene)                    | Done                                         |
+| Scene image URL in editor                           | Done                                         |
+| Hero roster in template                             | Done                                         |
+| Traits + point generation                           | Done                                         |
+| Player character card UI                            | Done                                         |
+| Staged scene play (start / text / tasks / progress) | Done                                         |
+| Scene image upload (MinIO)                          | Done                                         |
+| Cover image upload                                  | **Not started**                              |
+| Acts in DB                                          | **Not planned for MVP**                      |
+| Auto branching                                      | **Out of scope**                             |
 
 ---
 
 ## Decided
 
-| # | Decision |
-|---|----------|
-| 1 | ≥1 scene required before **Start session** and **Make public** |
-| 2 | **Public games cannot be edited**; only private games |
-| 3 | No copying community games - only start session |
-| 4 | One template, many parallel sessions by different hosts |
-| 5 | Bilingual: complete each language you start; one language is OK |
-| 6 | Form: English section first, optional language toggles |
-| 7 | **Hero roster slots**: host builds N slots (duplicates OK, e.g. 2× Doctor); each **slot** exclusive - one player per slot, taken slots hidden from others |
-| 8 | **Stats**: reroll until player taps **Ready**; locked after |
-| 9 | **Host** sees all player cards (hero + stats) in lobby and during play |
-| 10 | **Scene play**: **Start scene** does not show text; image on start; text and tasks revealed separately |
-| 11 | **Tasks**: 0-20 per scene in template; host shows/hides each; per-player tasks later |
-| 12 | **Scene progress table** on host console (pending / active / done) |
+| #   | Decision                                                                                                                                                  |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | ≥1 scene required before **Start session** and **Make public**                                                                                            |
+| 2   | **Public games cannot be edited**; only private games                                                                                                     |
+| 3   | No copying community games - only start session                                                                                                           |
+| 4   | One template, many parallel sessions by different hosts                                                                                                   |
+| 5   | Bilingual: complete each language you start; one language is OK                                                                                           |
+| 6   | Form: English section first, optional language toggles                                                                                                    |
+| 7   | **Hero roster slots**: host builds N slots (duplicates OK, e.g. 2× Doctor); each **slot** exclusive - one player per slot, taken slots hidden from others |
+| 8   | **Stats**: reroll until player taps **Ready**; locked after                                                                                               |
+| 9   | **Host** sees all player cards (hero + stats) in lobby and during play                                                                                    |
+| 10  | **Scene play**: **Start scene** does not show text; image on start; text and tasks revealed separately                                                    |
+| 11  | **Tasks**: 0-20 per scene in template; host shows/hides each; per-player tasks later                                                                      |
+| 12  | **Scene progress table** on host console (pending / active / done)                                                                                        |
 
 ## Open (later)
 
-| # | Question |
-|---|----------|
-| 1 | Scene reorder UI | Drag-and-drop in editor |
-| 2 | `PUBLISHED` status for host games | Defer; visibility is enough for MVP |
-| 3 | Per-player task assignment from host console | Defer |
+| #   | Question                                     |
+| --- | -------------------------------------------- | ----------------------------------- |
+| 1   | Scene reorder UI                             | Drag-and-drop in editor             |
+| 2   | `PUBLISHED` status for host games            | Defer; visibility is enough for MVP |
+| 3   | Per-player task assignment from host console | Defer                               |
 
 ---
 

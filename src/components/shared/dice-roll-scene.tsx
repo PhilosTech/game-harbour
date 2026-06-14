@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useId, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useEffect, useId, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 const MIN_ROLL_MS = 3800;
 
@@ -29,12 +29,12 @@ export function DiceRollScene({
   onComplete,
   onError,
 }: DiceRollSceneProps) {
-  const t = useTranslations('dice');
+  const t = useTranslations("dice");
   const containerRef = useRef<HTMLDivElement>(null);
   const onCompleteRef = useRef(onComplete);
   const onErrorRef = useRef(onError);
   const reactId = useId();
-  const containerId = `dice-roll-scene-${reactId.replace(/:/g, '')}`;
+  const containerId = `dice-roll-scene-${reactId.replace(/:/g, "")}`;
   const [hasFailed, setHasFailed] = useState(false);
 
   useEffect(() => {
@@ -58,20 +58,20 @@ export function DiceRollScene({
       try {
         await waitForLayout(sceneContainer);
 
-        const DiceBox = (await import('@3d-dice/dice-box-threejs')).default;
+        const DiceBox = (await import("@3d-dice/dice-box-threejs")).default;
 
         if (cancelled) {
           return;
         }
 
         const box = new DiceBox(`#${containerId}`, {
-          assetPath: '/assets/dice-threejs/',
+          assetPath: "/assets/dice-threejs/",
           sounds: false,
           shadows: true,
-          theme_surface: 'green-felt',
-          theme_colorset: 'white',
-          theme_material: 'plastic',
-          theme_texture: '',
+          theme_surface: "green-felt",
+          theme_colorset: "white",
+          theme_material: "plastic",
+          theme_texture: "",
           strength: 1.6,
           gravity_multiplier: 140,
           light_intensity: 0.85,
@@ -84,7 +84,7 @@ export function DiceRollScene({
           return;
         }
 
-        window.dispatchEvent(new Event('resize'));
+        window.dispatchEvent(new Event("resize"));
 
         const rollStartedAt = Date.now();
         await box.roll(notation);
@@ -100,7 +100,7 @@ export function DiceRollScene({
           onCompleteRef.current();
         }
       } catch (error) {
-        console.error('Dice roll scene failed', error);
+        console.error("Dice roll scene failed", error);
         if (!cancelled) {
           setHasFailed(true);
           onErrorRef.current?.();
@@ -120,7 +120,7 @@ export function DiceRollScene({
   if (hasFailed) {
     return (
       <div className="flex h-full w-full items-center justify-center text-sm text-muted">
-        {t('sceneUnavailable')}
+        {t("sceneUnavailable")}
       </div>
     );
   }

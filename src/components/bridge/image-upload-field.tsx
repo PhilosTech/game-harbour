@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useTranslations } from 'next-intl';
-import { useRef, useState } from 'react';
+import { useTranslations } from "next-intl";
+import { useRef, useState } from "react";
 
 const MAX_FILE_BYTES = 4 * 1024 * 1024;
-const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-type ImageUploadKind = 'background' | 'illustration';
+type ImageUploadKind = "background" | "illustration";
 
 type ImageUploadFieldProps = {
   gameId: string;
@@ -31,7 +31,7 @@ export function ImageUploadField({
   onChange,
   compact = false,
 }: ImageUploadFieldProps) {
-  const t = useTranslations('bridge');
+  const t = useTranslations("bridge");
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -42,7 +42,7 @@ export function ImageUploadField({
 
   const onFileSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    event.target.value = '';
+    event.target.value = "";
     if (!file) {
       return;
     }
@@ -50,17 +50,17 @@ export function ImageUploadField({
     setError(null);
 
     if (!ALLOWED_TYPES.has(file.type)) {
-      setError(t('imageUploadInvalidType'));
+      setError(t("imageUploadInvalidType"));
       return;
     }
 
     if (file.size > MAX_FILE_BYTES) {
-      setError(t('imageUploadTooLarge'));
+      setError(t("imageUploadTooLarge"));
       return;
     }
 
-    if (kind === 'illustration' && !assetId) {
-      setError(t('imageUploadFailed'));
+    if (kind === "illustration" && !assetId) {
+      setError(t("imageUploadFailed"));
       return;
     }
 
@@ -68,44 +68,49 @@ export function ImageUploadField({
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('kind', kind);
+      formData.append("file", file);
+      formData.append("kind", kind);
       if (assetId) {
-        formData.append('assetId', assetId);
+        formData.append("assetId", assetId);
       }
 
       const uploadResponse = await fetch(
         `/api/games/${gameId}/scenes/${sceneId}/image-upload`,
         {
-          method: 'POST',
+          method: "POST",
           body: formData,
         },
       );
 
       if (!uploadResponse.ok) {
-        const data = (await uploadResponse.json()) as { code?: string; error?: string };
-        if (data.code === 'STORAGE_UNAVAILABLE') {
-          setError(t('imageUploadUnavailable'));
-        } else if (data.code === 'STORAGE_CREDENTIALS') {
-          setError(t('imageUploadCredentials'));
+        const data = (await uploadResponse.json()) as {
+          code?: string;
+          error?: string;
+        };
+        if (data.code === "STORAGE_UNAVAILABLE") {
+          setError(t("imageUploadUnavailable"));
+        } else if (data.code === "STORAGE_CREDENTIALS") {
+          setError(t("imageUploadCredentials"));
         } else {
-          setError(data.error ?? t('imageUploadFailed'));
+          setError(data.error ?? t("imageUploadFailed"));
         }
         return;
       }
 
-      const { publicUrl } = (await uploadResponse.json()) as { publicUrl: string };
+      const { publicUrl } = (await uploadResponse.json()) as {
+        publicUrl: string;
+      };
       onChange(publicUrl);
     } catch {
-      setError(t('imageUploadFailed'));
+      setError(t("imageUploadFailed"));
     } finally {
       setIsUploading(false);
     }
   };
 
   const previewClass = compact
-    ? 'max-h-24 w-full rounded-lg border border-border object-cover'
-    : 'max-h-40 w-full rounded-xl border border-border object-cover';
+    ? "max-h-24 w-full rounded-lg border border-border object-cover"
+    : "max-h-40 w-full rounded-xl border border-border object-cover";
 
   return (
     <div className="space-y-2">
@@ -128,15 +133,15 @@ export function ImageUploadField({
               disabled={isUploading}
               className="min-h-8 rounded-lg border border-border px-2.5 text-xs hover:border-accent disabled:opacity-50"
             >
-              {isUploading ? '...' : t('imageUploadReplace')}
+              {isUploading ? "..." : t("imageUploadReplace")}
             </button>
             <button
               type="button"
-              onClick={() => onChange('')}
+              onClick={() => onChange("")}
               disabled={isUploading}
               className="min-h-8 rounded-lg border border-border px-2.5 text-xs text-red-300 hover:border-red-500 disabled:opacity-50"
             >
-              {t('imageUploadRemove')}
+              {t("imageUploadRemove")}
             </button>
           </div>
         </div>
@@ -147,7 +152,7 @@ export function ImageUploadField({
           disabled={isUploading}
           className="min-h-10 w-full rounded-xl border border-dashed border-border px-3 text-xs hover:border-accent disabled:opacity-50"
         >
-          {isUploading ? '...' : t('imageUpload')}
+          {isUploading ? "..." : t("imageUpload")}
         </button>
       )}
 

@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   getRealtimeSocket,
   type ActionAck,
   type JoinAck,
-} from '@/lib/realtime-client';
-import type { RoomEventPayload, RoomState } from '@/session-engine/room-events';
+} from "@/lib/realtime-client";
+import type { RoomEventPayload, RoomState } from "@/session-engine/room-events";
 
 type HostJoin = {
-  role: 'host';
+  role: "host";
   sessionId: string;
   hostId: string;
 };
 
 type PlayerJoin = {
-  role: 'player';
+  role: "player";
   sessionId: string;
   playerId: string;
 };
@@ -28,8 +28,8 @@ export function useRoomSocket(options: UseRoomSocketOptions | null) {
   const [error, setError] = useState<string | null>(null);
   const sessionId = options?.sessionId ?? null;
   const role = options?.role ?? null;
-  const hostId = options?.role === 'host' ? options.hostId : null;
-  const playerId = options?.role === 'player' ? options.playerId : null;
+  const hostId = options?.role === "host" ? options.hostId : null;
+  const playerId = options?.role === "player" ? options.playerId : null;
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
@@ -50,24 +50,24 @@ export function useRoomSocket(options: UseRoomSocketOptions | null) {
       setError(null);
 
       const joinPayload =
-        optionsRef.current.role === 'host'
+        optionsRef.current.role === "host"
           ? {
               sessionId: optionsRef.current.sessionId,
-              role: 'host' as const,
+              role: "host" as const,
               hostId: optionsRef.current.hostId,
             }
           : {
               sessionId: optionsRef.current.sessionId,
-              role: 'player' as const,
+              role: "player" as const,
               playerId: optionsRef.current.playerId,
             };
 
-      socket.emit('room:join', joinPayload, (ack: JoinAck) => {
+      socket.emit("room:join", joinPayload, (ack: JoinAck) => {
         if (!isActive) {
           return;
         }
         if (!ack.ok) {
-          setError(ack.error ?? 'Join failed');
+          setError(ack.error ?? "Join failed");
           return;
         }
         if (ack.state) {
@@ -82,8 +82,8 @@ export function useRoomSocket(options: UseRoomSocketOptions | null) {
       }
     };
 
-    socket.on('connect', onConnect);
-    socket.on('room:state', onState);
+    socket.on("connect", onConnect);
+    socket.on("room:state", onState);
 
     if (!socket.connected) {
       socket.connect();
@@ -93,8 +93,8 @@ export function useRoomSocket(options: UseRoomSocketOptions | null) {
 
     return () => {
       isActive = false;
-      socket.off('connect', onConnect);
-      socket.off('room:state', onState);
+      socket.off("connect", onConnect);
+      socket.off("room:state", onState);
       socket.disconnect();
     };
   }, [sessionId, role, hostId, playerId]);
@@ -102,14 +102,14 @@ export function useRoomSocket(options: UseRoomSocketOptions | null) {
   const emitHostAction = useCallback(
     (event: RoomEventPayload) =>
       new Promise<ActionAck>((resolve) => {
-        if (!options || options.role !== 'host') {
-          resolve({ ok: false, error: 'Not a host' });
+        if (!options || options.role !== "host") {
+          resolve({ ok: false, error: "Not a host" });
           return;
         }
 
         const socket = getRealtimeSocket();
         socket.emit(
-          'host:action',
+          "host:action",
           {
             sessionId: options.sessionId,
             hostId: options.hostId,
@@ -122,14 +122,14 @@ export function useRoomSocket(options: UseRoomSocketOptions | null) {
   );
 
   const submitRoll = useCallback(() => {
-    if (!options || options.role !== 'player') {
-      return Promise.resolve({ ok: false, error: 'Not a player' });
+    if (!options || options.role !== "player") {
+      return Promise.resolve({ ok: false, error: "Not a player" });
     }
 
     const socket = getRealtimeSocket();
     return new Promise<ActionAck>((resolve) => {
       socket.emit(
-        'player:roll',
+        "player:roll",
         {
           sessionId: options.sessionId,
           playerId: options.playerId,
@@ -141,17 +141,17 @@ export function useRoomSocket(options: UseRoomSocketOptions | null) {
 
   const submitLobbyAction = useCallback(
     (
-      action: 'claim_slot' | 'reroll_traits' | 'mark_ready',
+      action: "claim_slot" | "reroll_traits" | "mark_ready",
       heroSlotId?: string,
     ) => {
-      if (!options || options.role !== 'player') {
-        return Promise.resolve({ ok: false, error: 'Not a player' });
+      if (!options || options.role !== "player") {
+        return Promise.resolve({ ok: false, error: "Not a player" });
       }
 
       const socket = getRealtimeSocket();
       return new Promise<ActionAck>((resolve) => {
         socket.emit(
-          'player:lobby_action',
+          "player:lobby_action",
           {
             sessionId: options.sessionId,
             playerId: options.playerId,
@@ -168,17 +168,17 @@ export function useRoomSocket(options: UseRoomSocketOptions | null) {
   const submitDiceRoll = useCallback(
     (sides: number, count = 1) => {
       if (!options) {
-        return Promise.resolve({ ok: false, error: 'Not connected' });
+        return Promise.resolve({ ok: false, error: "Not connected" });
       }
 
-      if (options.role === 'host') {
-        return emitHostAction({ type: 'dice_roll_request', sides, count });
+      if (options.role === "host") {
+        return emitHostAction({ type: "dice_roll_request", sides, count });
       }
 
       const socket = getRealtimeSocket();
       return new Promise<ActionAck>((resolve) => {
         socket.emit(
-          'player:dice_roll',
+          "player:dice_roll",
           {
             sessionId: options.sessionId,
             playerId: options.playerId,
@@ -193,10 +193,10 @@ export function useRoomSocket(options: UseRoomSocketOptions | null) {
   );
 
   const dismissDiceRoll = useCallback(() => {
-    if (!options || options.role !== 'host') {
-      return Promise.resolve({ ok: false, error: 'Not a host' });
+    if (!options || options.role !== "host") {
+      return Promise.resolve({ ok: false, error: "Not a host" });
     }
-    return emitHostAction({ type: 'dice_roll_dismissed' });
+    return emitHostAction({ type: "dice_roll_dismissed" });
   }, [options, emitHostAction]);
 
   return {

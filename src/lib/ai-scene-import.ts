@@ -1,6 +1,6 @@
-import { SceneType } from '@prisma/client';
-import { z } from 'zod';
-import { sceneKeySchema } from '@/lib/scene-key';
+import { SceneType } from "@prisma/client";
+import { z } from "zod";
+import { sceneKeySchema } from "@/lib/scene-key";
 
 const importedSceneTaskSchema = z.object({
   textRu: z.string().trim().max(2000),
@@ -17,12 +17,16 @@ export const importedSceneSchema = z.object({
   type: z.nativeEnum(SceneType).default(SceneType.STORY),
   contentRu: z.string().trim().max(5000),
   contentEn: z.string().trim().max(5000),
-  hostOnlyNotes: z.string().trim().max(2000).optional().default(''),
-  imageUrl: z.string().trim().max(2000).optional().default(''),
-  illustrationHints: z.array(illustrationHintSchema).max(5).optional().default([]),
+  hostOnlyNotes: z.string().trim().max(2000).optional().default(""),
+  imageUrl: z.string().trim().max(2000).optional().default(""),
+  illustrationHints: z
+    .array(illustrationHintSchema)
+    .max(5)
+    .optional()
+    .default([]),
   tasks: z.array(importedSceneTaskSchema).max(20).optional().default([]),
-  playerTaskRu: z.string().trim().max(2000).optional().default(''),
-  playerTaskEn: z.string().trim().max(2000).optional().default(''),
+  playerTaskRu: z.string().trim().max(2000).optional().default(""),
+  playerTaskEn: z.string().trim().max(2000).optional().default(""),
 });
 
 export const importedScenesPayloadSchema = z.object({
@@ -32,12 +36,12 @@ export const importedScenesPayloadSchema = z.object({
 export type ImportedScene = z.infer<typeof importedSceneSchema>;
 
 export type SceneImportError =
-  | 'INVALID_JSON'
-  | 'INVALID_FORMAT'
-  | 'DUPLICATE_SCENE_KEY'
-  | 'EMPTY_SCENES'
-  | 'NOTE_EMPTY_NOTES'
-  | 'NOTE_NOT_LAST';
+  | "INVALID_JSON"
+  | "INVALID_FORMAT"
+  | "DUPLICATE_SCENE_KEY"
+  | "EMPTY_SCENES"
+  | "NOTE_EMPTY_NOTES"
+  | "NOTE_NOT_LAST";
 
 export type SceneImportResult =
   | { ok: true; scenes: ImportedScene[] }
@@ -62,7 +66,7 @@ export function appendIllustrationHintsToNotes(
     return `${index + 1}. ${ru || en}`;
   });
 
-  const block = `\n\n[Image search labels]\n${lines.join('\n')}`;
+  const block = `\n\n[Image search labels]\n${lines.join("\n")}`;
   const merged = `${hostOnlyNotes}${block}`.trim();
   return merged.slice(0, HOST_NOTES_MAX);
 }
@@ -72,8 +76,11 @@ function normalizeImportedScene(scene: ImportedScene): ImportedScene {
 
   return {
     ...rest,
-    imageUrl: imageUrl?.startsWith('http') ? imageUrl : '',
-    hostOnlyNotes: appendIllustrationHintsToNotes(rest.hostOnlyNotes, illustrationHints),
+    imageUrl: imageUrl?.startsWith("http") ? imageUrl : "",
+    hostOnlyNotes: appendIllustrationHintsToNotes(
+      rest.hostOnlyNotes,
+      illustrationHints,
+    ),
     illustrationHints: [],
   };
 }
@@ -84,8 +91,8 @@ function extractJsonBlock(raw: string): string {
     return fenced[1].trim();
   }
 
-  const firstBrace = raw.indexOf('{');
-  const lastBrace = raw.lastIndexOf('}');
+  const firstBrace = raw.indexOf("{");
+  const lastBrace = raw.lastIndexOf("}");
   if (firstBrace !== -1 && lastBrace > firstBrace) {
     return raw.slice(firstBrace, lastBrace + 1);
   }
@@ -99,12 +106,12 @@ export function parseImportedScenes(raw: string): SceneImportResult {
   try {
     parsed = JSON.parse(extractJsonBlock(raw));
   } catch {
-    return { ok: false, code: 'INVALID_JSON' };
+    return { ok: false, code: "INVALID_JSON" };
   }
 
   const validated = importedScenesPayloadSchema.safeParse(parsed);
   if (!validated.success) {
-    return { ok: false, code: 'INVALID_FORMAT' };
+    return { ok: false, code: "INVALID_FORMAT" };
   }
 
   const keys = new Set<string>();
@@ -115,20 +122,20 @@ export function parseImportedScenes(raw: string): SceneImportResult {
     const scene = rawScenes[index];
 
     if (keys.has(scene.sceneKey)) {
-      return { ok: false, code: 'DUPLICATE_SCENE_KEY' };
+      return { ok: false, code: "DUPLICATE_SCENE_KEY" };
     }
     keys.add(scene.sceneKey);
 
     if (!scene.contentRu && !scene.contentEn && scene.type !== SceneType.NOTE) {
-      return { ok: false, code: 'INVALID_FORMAT' };
+      return { ok: false, code: "INVALID_FORMAT" };
     }
 
     if (scene.type === SceneType.NOTE) {
       if (!scene.hostOnlyNotes.trim()) {
-        return { ok: false, code: 'NOTE_EMPTY_NOTES' };
+        return { ok: false, code: "NOTE_EMPTY_NOTES" };
       }
       if (index !== rawScenes.length - 1) {
-        return { ok: false, code: 'NOTE_NOT_LAST' };
+        return { ok: false, code: "NOTE_NOT_LAST" };
       }
     }
 
@@ -143,80 +150,82 @@ export function getAiSceneJsonExample(): string {
     {
       scenes: [
         {
-          sceneKey: 'briefing',
-          type: 'STORY',
+          sceneKey: "briefing",
+          type: "STORY",
           contentRu:
-            'Утро в порту встречает вас сырой солью и гулом двигателей. Спонсор разворачивает на столе выцветшие карты — последняя зацепка ведёт вглубь джунглей.',
+            "Утро в порту встречает вас сырой солью и гулом двигателей. Спонсор разворачивает на столе выцветшие карты — последняя зацепка ведёт вглубь джунглей.",
           contentEn:
-            'Morning at the port greets you with salt air and engine noise. The sponsor spreads faded maps on the table — the last lead points deep into the jungle.',
+            "Morning at the port greets you with salt air and engine noise. The sponsor spreads faded maps on the table — the last lead points deep into the jungle.",
           hostOnlyNotes:
-            'Акт 1. Подчеркните ограниченный бюджет и срок. Герои: дайте каждому одну реплику о мотивации.',
-          imageUrl: '',
+            "Акт 1. Подчеркните ограниченный бюджет и срок. Герои: дайте каждому одну реплику о мотивации.",
+          imageUrl: "",
           illustrationHints: [
             {
-              hintRu: 'Порт Манауса',
-              hintEn: 'Manaus port',
+              hintRu: "Порт Манауса",
+              hintEn: "Manaus port",
             },
             {
-              hintRu: 'Дневник картографа',
-              hintEn: 'Cartographer diary',
+              hintRu: "Дневник картографа",
+              hintEn: "Cartographer diary",
             },
           ],
           tasks: [
             {
-              textRu: 'Журналист: задайте спонсору вопрос, от которого он отмахнётся.',
-              textEn: 'Journalist: ask the sponsor one question they try to dodge.',
+              textRu:
+                "Журналист: задайте спонсору вопрос, от которого он отмахнётся.",
+              textEn:
+                "Journalist: ask the sponsor one question they try to dodge.",
             },
           ],
         },
         {
-          sceneKey: 'bush_rustle',
-          type: 'CHECK',
+          sceneKey: "bush_rustle",
+          type: "CHECK",
           contentRu:
-            'Тропа сужается, и в кустах справа внезапно шевелится что-то тяжёлое. На секунду все замирают — впереди только узкий проход и тёмная вода.',
+            "Тропа сужается, и в кустах справа внезапно шевелится что-то тяжёлое. На секунду все замирают — впереди только узкий проход и тёмная вода.",
           contentEn:
-            'The trail narrows, and something heavy shifts in the bushes to your right. Everyone freezes for a second — ahead lies only a tight passage and dark water.',
+            "The trail narrows, and something heavy shifts in the bushes to your right. Everyone freezes for a second — ahead lies only a tight passage and dark water.",
           hostOnlyNotes:
-            'Кубик: d6\nПроверка: без характеристики\nКто бросает: любой игрок\nИнтерпретация: 1 = капибара убегает; 2 = змея шипит и уходит; 3 = агрессивная собака рычит; 4 = шпион конкурентов; 5 = пусто, ветер; 6 = обрывок карты в грязи\nНе game over. После броска дайте группе отреагировать.',
-          imageUrl: '',
+            "Кубик: d6\nПроверка: без характеристики\nКто бросает: любой игрок\nИнтерпретация: 1 = капибара убегает; 2 = змея шипит и уходит; 3 = агрессивная собака рычит; 4 = шпион конкурентов; 5 = пусто, ветер; 6 = обрывок карты в грязи\nНе game over. После броска дайте группе отреагировать.",
+          imageUrl: "",
           illustrationHints: [
             {
-              hintRu: 'Джунгли Амазонки',
-              hintEn: 'Amazon jungle',
+              hintRu: "Джунгли Амазонки",
+              hintEn: "Amazon jungle",
             },
           ],
           tasks: [
             {
-              textRu: 'Подойдите к шороху или обходите — скажите, почему.',
-              textEn: 'Approach the rustling or go around — say why.',
+              textRu: "Подойдите к шороху или обходите — скажите, почему.",
+              textEn: "Approach the rustling or go around — say why.",
             },
           ],
         },
         {
-          sceneKey: 'jungle_gate',
-          type: 'STORY',
+          sceneKey: "jungle_gate",
+          type: "STORY",
           contentRu:
-            'К вечеру выходите к старой заставе на границе джунглей. Карта совпала — дальше путь только вперёд, и каждый решает, что готов отдать за ответ.',
+            "К вечеру выходите к старой заставе на границе джунглей. Карта совпала — дальше путь только вперёд, и каждый решает, что готов отдать за ответ.",
           contentEn:
-            'By evening you reach an old outpost on the jungle edge. The map was right — the only way is forward, and everyone must decide what they will give for an answer.',
+            "By evening you reach an old outpost on the jungle edge. The map was right — the only way is forward, and everyone must decide what they will give for an answer.",
           hostOnlyNotes:
-            'Финал акта 1. Открытый финал: не объявляйте победу. Дайте игрокам назвать личную цель на акт 2.',
-          imageUrl: '',
+            "Финал акта 1. Открытый финал: не объявляйте победу. Дайте игрокам назвать личную цель на акт 2.",
+          imageUrl: "",
           tasks: [
             {
-              textRu: 'Назовите, ради чего вы идёте дальше.',
-              textEn: 'Name what drives you to go on.',
+              textRu: "Назовите, ради чего вы идёте дальше.",
+              textEn: "Name what drives you to go on.",
             },
           ],
         },
         {
-          sceneKey: 'host_reference',
-          type: 'NOTE',
-          contentRu: '',
-          contentEn: '',
+          sceneKey: "host_reference",
+          type: "NOTE",
+          contentRu: "",
+          contentEn: "",
           hostOnlyNotes:
-            'Справка ведущему (игроки не видят):\nNPC: торговец Мартин (осторожный, знает слухи), бригадир Руис (скрытный конкурент).\nРесурсы: 5 дней провизии, 1 запасной мотор.\nТайны: на свежей тропе следы не местной техники.\nКонцовки: углубиться в джунгли / отступить с уликами / договориться с Руисом.',
-          imageUrl: '',
+            "Справка ведущему (игроки не видят):\nNPC: торговец Мартин (осторожный, знает слухи), бригадир Руис (скрытный конкурент).\nРесурсы: 5 дней провизии, 1 запасной мотор.\nТайны: на свежей тропе следы не местной техники.\nКонцовки: углубиться в джунгли / отступить с уликами / договориться с Руисом.",
+          imageUrl: "",
         },
       ],
     },

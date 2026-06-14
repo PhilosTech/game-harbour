@@ -1,4 +1,4 @@
-declare module '@3d-dice/dice-box-threejs' {
+declare module "@3d-dice/dice-box-threejs" {
   type DiceBoxConfig = {
     assetPath?: string;
     framerate?: number;

@@ -3,15 +3,17 @@ import type {
   PlayerSnapshot,
   RoomState,
   SessionPhase,
-} from './room-events';
-import { createInitialRoomState } from './room-events';
+} from "./room-events";
+import { createInitialRoomState } from "./room-events";
 
 function completeActiveScene(state: RoomState): RoomState {
   if (!state.activeScene) {
     return state;
   }
 
-  const completedSceneKeys = state.completedSceneKeys.includes(state.activeScene.sceneKey)
+  const completedSceneKeys = state.completedSceneKeys.includes(
+    state.activeScene.sceneKey,
+  )
     ? state.completedSceneKeys
     : [...state.completedSceneKeys, state.activeScene.sceneKey];
 
@@ -28,8 +30,15 @@ export function buildRoomState(
   phase: SessionPhase,
   players: PlayerSnapshot[],
   events: PersistedRoomEvent[],
+  gameTitleRu = "",
+  gameTitleEn = "",
 ): RoomState {
-  let state = createInitialRoomState(sessionId, roomCode);
+  let state = createInitialRoomState(
+    sessionId,
+    roomCode,
+    gameTitleRu,
+    gameTitleEn,
+  );
   state.phase = phase;
   state.players = players;
 
@@ -45,7 +54,7 @@ export function applyRoomEvent(
   event: PersistedRoomEvent,
 ): RoomState {
   switch (event.type) {
-    case 'player_joined':
+    case "player_joined":
       if (state.players.some((player) => player.id === event.player.id)) {
         return state;
       }
@@ -53,14 +62,14 @@ export function applyRoomEvent(
         ...state,
         players: [...state.players, event.player],
       };
-    case 'player_left':
+    case "player_left":
       return {
         ...state,
         players: state.players.filter((player) => player.id !== event.playerId),
       };
-    case 'session_started':
-      return { ...state, phase: 'ACTIVE' };
-    case 'scene_started': {
+    case "session_started":
+      return { ...state, phase: "ACTIVE" };
+    case "scene_started": {
       const afterComplete = completeActiveScene(state);
       return {
         ...afterComplete,
@@ -75,7 +84,7 @@ export function applyRoomEvent(
         },
       };
     }
-    case 'scene_text_visibility':
+    case "scene_text_visibility":
       if (!state.activeScene) {
         return state;
       }
@@ -86,17 +95,21 @@ export function applyRoomEvent(
           textVisible: event.visible,
         },
       };
-    case 'scene_task_visibility': {
+    case "scene_task_visibility": {
       if (!state.activeScene) {
         return state;
       }
 
       const visibleTasks = event.visible
         ? [
-            ...state.activeScene.visibleTasks.filter((task) => task.id !== event.taskId),
+            ...state.activeScene.visibleTasks.filter(
+              (task) => task.id !== event.taskId,
+            ),
             { id: event.taskId, text: event.text },
           ]
-        : state.activeScene.visibleTasks.filter((task) => task.id !== event.taskId);
+        : state.activeScene.visibleTasks.filter(
+            (task) => task.id !== event.taskId,
+          );
 
       return {
         ...state,
@@ -106,7 +119,7 @@ export function applyRoomEvent(
         },
       };
     }
-    case 'scene_illustration_visibility': {
+    case "scene_illustration_visibility": {
       if (!state.activeScene) {
         return state;
       }
@@ -130,30 +143,30 @@ export function applyRoomEvent(
         },
       };
     }
-    case 'scene_ended':
+    case "scene_ended":
       return completeActiveScene(state);
-    case 'scene_broadcast': {
+    case "scene_broadcast": {
       const afterComplete = completeActiveScene(state);
       return {
         ...afterComplete,
         activeScene: {
-          sceneKey: event.sceneKey ?? '',
+          sceneKey: event.sceneKey ?? "",
           sceneOrder: event.sceneOrder ?? 0,
           imageUrl: event.imageUrl,
           text: event.text,
           textVisible: true,
           visibleTasks: event.playerTask
-            ? [{ id: 'legacy', text: event.playerTask }]
+            ? [{ id: "legacy", text: event.playerTask }]
             : [],
           visibleIllustrations: [],
         },
       };
     }
-    case 'roll_requested':
+    case "roll_requested":
       return { ...state, pendingRoll: event.request, lastRollResult: null };
-    case 'roll_result':
+    case "roll_result":
       return { ...state, pendingRoll: null, lastRollResult: event.result };
-    case 'dice_roll':
+    case "dice_roll":
       return {
         ...state,
         activeDiceRoll: {
@@ -161,15 +174,15 @@ export function applyRoomEvent(
           ...event.roll,
         },
       };
-    case 'dice_roll_dismissed':
+    case "dice_roll_dismissed":
       return { ...state, activeDiceRoll: null };
-    case 'host_private_note':
+    case "host_private_note":
       return {
         ...state,
         hostPrivateNotes: [...state.hostPrivateNotes, event.text],
       };
-    case 'session_ended':
-      return { ...state, phase: 'ENDED', activeDiceRoll: null };
+    case "session_ended":
+      return { ...state, phase: "ENDED", activeDiceRoll: null };
     default:
       return state;
   }

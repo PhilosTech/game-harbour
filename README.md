@@ -32,13 +32,13 @@ UI-only work without live rooms: `npm run dev:next`.
 
 ### When to restart `npm run dev`
 
-| Change | Action |
-|--------|--------|
-| React components, styles, API routes, `messages/*.json` | Usually nothing - Next.js hot-reloads. Hard refresh if UI looks stale. |
-| `realtime/`, `src/server/`, `src/session-engine/` | WebSocket process restarts automatically (`tsx watch`). Refresh the browser tab. |
-| `prisma/schema.prisma` | Run `npm run db:migrate` (or `db:push` locally). Prisma client regenerates in the background; **restart `npm run dev` once** so Next.js picks up the new client. |
-| `.env`, `middleware.ts`, `next.config.ts` | **Restart `npm run dev`** |
-| After `npm run db:reset` | **Restart `npm run dev`** |
+| Change                                                  | Action                                                                                                                                                           |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React components, styles, API routes, `messages/*.json` | Usually nothing - Next.js hot-reloads. Hard refresh if UI looks stale.                                                                                           |
+| `realtime/`, `src/server/`, `src/session-engine/`       | WebSocket process restarts automatically (`tsx watch`). Refresh the browser tab.                                                                                 |
+| `prisma/schema.prisma`                                  | Run `npm run db:migrate` (or `db:push` locally). Prisma client regenerates in the background; **restart `npm run dev` once** so Next.js picks up the new client. |
+| `.env`, `middleware.ts`, `next.config.ts`               | **Restart `npm run dev`**                                                                                                                                        |
+| After `npm run db:reset`                                | **Restart `npm run dev`**                                                                                                                                        |
 
 You do **not** need a full restart for every code edit. Restart only when env, Prisma schema, or Next config changes, or when the dev server looks stuck.
 
@@ -53,9 +53,9 @@ You do **not** need a full restart for every code edit. Restart only when env, P
 
 ## Docs
 
-| File | Purpose |
-|------|---------|
-| [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) | Architecture and roadmap |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Vercel, Neon, Render |
-| [docs/games/el-dorado.md](docs/games/el-dorado.md) | First game |
-| [docs/session-engine.md](docs/session-engine.md) | Live session runtime |
+| File                                               | Purpose                  |
+| -------------------------------------------------- | ------------------------ |
+| [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md)       | Architecture and roadmap |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)           | Vercel, Neon, Render     |
+| [docs/games/el-dorado.md](docs/games/el-dorado.md) | First game               |
+| [docs/session-engine.md](docs/session-engine.md)   | Live session runtime     |

@@ -1,50 +1,60 @@
-'use client';
+"use client";
 
-import { GameVisibility } from '@prisma/client';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { FormEvent, useState } from 'react';
+import { GameVisibility } from "@prisma/client";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
 
 export function CreateGameForm() {
-  const t = useTranslations('bridge');
+  const t = useTranslations("bridge");
   const locale = useLocale();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [visibility, setVisibility] = useState<GameVisibility>(GameVisibility.PRIVATE);
-  const [useEnglish, setUseEnglish] = useState(locale === 'en');
-  const [useRussian, setUseRussian] = useState(locale === 'ru');
+  const [visibility, setVisibility] = useState<GameVisibility>(
+    GameVisibility.PRIVATE,
+  );
+  const [useEnglish, setUseEnglish] = useState(locale === "en");
+  const [useRussian, setUseRussian] = useState(locale === "ru");
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
 
     if (!useEnglish && !useRussian) {
-      setError(t('languageRequired'));
+      setError(t("languageRequired"));
       return;
     }
 
     const formData = new FormData(event.currentTarget);
-    const titleEn = useEnglish ? String(formData.get('titleEn') ?? '').trim() : '';
-    const descriptionEn = useEnglish ? String(formData.get('descriptionEn') ?? '').trim() : '';
-    const titleRu = useRussian ? String(formData.get('titleRu') ?? '').trim() : '';
-    const descriptionRu = useRussian ? String(formData.get('descriptionRu') ?? '').trim() : '';
+    const titleEn = useEnglish
+      ? String(formData.get("titleEn") ?? "").trim()
+      : "";
+    const descriptionEn = useEnglish
+      ? String(formData.get("descriptionEn") ?? "").trim()
+      : "";
+    const titleRu = useRussian
+      ? String(formData.get("titleRu") ?? "").trim()
+      : "";
+    const descriptionRu = useRussian
+      ? String(formData.get("descriptionRu") ?? "").trim()
+      : "";
 
     if (useEnglish && (!titleEn || !descriptionEn)) {
-      setError(t('englishIncomplete'));
+      setError(t("englishIncomplete"));
       return;
     }
 
     if (useRussian && (!titleRu || !descriptionRu)) {
-      setError(t('russianIncomplete'));
+      setError(t("russianIncomplete"));
       return;
     }
 
     setIsLoading(true);
 
-    const response = await fetch('/api/games', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/games", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         titleRu,
         titleEn,
@@ -56,7 +66,11 @@ export function CreateGameForm() {
 
     if (!response.ok) {
       const data = (await response.json()) as { error?: string; code?: string };
-      setError(data.code ? t(`gameErrors.${data.code}`) : data.error ?? t('createFailed'));
+      setError(
+        data.code
+          ? t(`gameErrors.${data.code}`)
+          : (data.error ?? t("createFailed")),
+      );
       setIsLoading(false);
       return;
     }
@@ -82,8 +96,11 @@ export function CreateGameForm() {
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 rounded-2xl border border-border bg-card p-5">
-      <p className="text-sm text-muted">{t('languageSectionsHint')}</p>
+    <form
+      onSubmit={onSubmit}
+      className="space-y-4 rounded-2xl border border-border bg-card p-5"
+    >
+      <p className="text-sm text-muted">{t("languageSectionsHint")}</p>
 
       <section className="space-y-3 rounded-xl border border-border p-4">
         <label className="flex cursor-pointer items-center gap-3">
@@ -91,14 +108,14 @@ export function CreateGameForm() {
             type="checkbox"
             checked={useEnglish}
             onChange={onToggleEnglish}
-            aria-label={t('includeEnglish')}
+            aria-label={t("includeEnglish")}
           />
-          <span className="text-sm font-medium">{t('englishSection')}</span>
+          <span className="text-sm font-medium">{t("englishSection")}</span>
         </label>
         {useEnglish ? (
           <div className="space-y-3 pl-7">
             <label className="block space-y-2">
-              <span className="text-sm text-muted">{t('titleEn')}</span>
+              <span className="text-sm text-muted">{t("titleEn")}</span>
               <input
                 name="titleEn"
                 maxLength={120}
@@ -106,7 +123,7 @@ export function CreateGameForm() {
               />
             </label>
             <label className="block space-y-2">
-              <span className="text-sm text-muted">{t('descriptionEn')}</span>
+              <span className="text-sm text-muted">{t("descriptionEn")}</span>
               <textarea
                 name="descriptionEn"
                 rows={3}
@@ -124,14 +141,14 @@ export function CreateGameForm() {
             type="checkbox"
             checked={useRussian}
             onChange={onToggleRussian}
-            aria-label={t('includeRussian')}
+            aria-label={t("includeRussian")}
           />
-          <span className="text-sm font-medium">{t('russianSection')}</span>
+          <span className="text-sm font-medium">{t("russianSection")}</span>
         </label>
         {useRussian ? (
           <div className="space-y-3 pl-7">
             <label className="block space-y-2">
-              <span className="text-sm text-muted">{t('titleRu')}</span>
+              <span className="text-sm text-muted">{t("titleRu")}</span>
               <input
                 name="titleRu"
                 maxLength={120}
@@ -139,7 +156,7 @@ export function CreateGameForm() {
               />
             </label>
             <label className="block space-y-2">
-              <span className="text-sm text-muted">{t('descriptionRu')}</span>
+              <span className="text-sm text-muted">{t("descriptionRu")}</span>
               <textarea
                 name="descriptionRu"
                 rows={3}
@@ -152,7 +169,7 @@ export function CreateGameForm() {
       </section>
 
       <fieldset className="space-y-3">
-        <legend className="text-sm text-muted">{t('visibilityLabel')}</legend>
+        <legend className="text-sm text-muted">{t("visibilityLabel")}</legend>
         <label className="flex cursor-pointer gap-3 rounded-xl border border-border p-3 has-[:checked]:border-accent has-[:checked]:bg-accent/5">
           <input
             type="radio"
@@ -163,8 +180,12 @@ export function CreateGameForm() {
             className="mt-1"
           />
           <span className="space-y-1">
-            <span className="block text-sm font-medium">{t('visibilityPrivate')}</span>
-            <span className="block text-xs text-muted">{t('visibilityPrivateHint')}</span>
+            <span className="block text-sm font-medium">
+              {t("visibilityPrivate")}
+            </span>
+            <span className="block text-xs text-muted">
+              {t("visibilityPrivateHint")}
+            </span>
           </span>
         </label>
         <label className="flex cursor-pointer gap-3 rounded-xl border border-border p-3 has-[:checked]:border-accent has-[:checked]:bg-accent/5">
@@ -177,8 +198,12 @@ export function CreateGameForm() {
             className="mt-1"
           />
           <span className="space-y-1">
-            <span className="block text-sm font-medium">{t('visibilityPublic')}</span>
-            <span className="block text-xs text-muted">{t('visibilityPublicHint')}</span>
+            <span className="block text-sm font-medium">
+              {t("visibilityPublic")}
+            </span>
+            <span className="block text-xs text-muted">
+              {t("visibilityPublicHint")}
+            </span>
           </span>
         </label>
       </fieldset>
@@ -192,7 +217,7 @@ export function CreateGameForm() {
         disabled={isLoading}
         className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-accent text-sm font-semibold text-background disabled:opacity-60"
       >
-        {isLoading ? '...' : t('saveGame')}
+        {isLoading ? "..." : t("saveGame")}
       </button>
     </form>
   );

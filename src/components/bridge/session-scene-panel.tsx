@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { pickLocalizedGameText } from '@/lib/game-content-i18n';
-import type { ActiveSceneState } from '@/types/scene-play-state';
-import type { RoomEventPayload } from '@/session-engine/room-events';
+import { pickLocalizedGameText } from "@/lib/game-content-i18n";
+import type { ActiveSceneState } from "@/types/scene-play-state";
+import type { RoomEventPayload } from "@/session-engine/room-events";
 import type {
   SessionSceneData,
   SessionSceneIllustrationData,
   SessionSceneTaskData,
-} from '@/types/session-scene';
-import { SceneType } from '@prisma/client';
-import { useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
+} from "@/types/session-scene";
+import { SceneType } from "@prisma/client";
+import { useLocale, useTranslations } from "next-intl";
+import { useState } from "react";
 
 type SessionScenePanelProps = {
   scenes: SessionSceneData[];
-  phase: 'LOBBY' | 'ACTIVE' | 'ENDED';
+  phase: "LOBBY" | "ACTIVE" | "ENDED";
   activeScene: ActiveSceneState | null;
   onHostAction: (event: RoomEventPayload) => Promise<unknown>;
 };
@@ -25,14 +25,14 @@ export function SessionScenePanel({
   activeScene,
   onHostAction,
 }: SessionScenePanelProps) {
-  const t = useTranslations('session');
+  const t = useTranslations("session");
   const locale = useLocale();
   const [isBusy, setIsBusy] = useState(false);
 
   if (scenes.length === 0) {
     return (
       <section className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted">
-        {t('noScenesInGame')}
+        {t("noScenesInGame")}
       </section>
     );
   }
@@ -46,17 +46,21 @@ export function SessionScenePanel({
     }
   };
 
-  const isSessionActive = phase === 'ACTIVE';
+  const isSessionActive = phase === "ACTIVE";
 
   const isSceneActive = (scene: SessionSceneData) =>
     Boolean(
       activeScene &&
-        (activeScene.sceneKey === scene.sceneKey ||
-          activeScene.sceneOrder === scene.order),
+      (activeScene.sceneKey === scene.sceneKey ||
+        activeScene.sceneOrder === scene.order),
     );
 
   const startScene = async (scene: SessionSceneData) => {
-    const text = pickLocalizedGameText(locale, scene.contentRu, scene.contentEn);
+    const text = pickLocalizedGameText(
+      locale,
+      scene.contentRu,
+      scene.contentEn,
+    );
     const hasContent =
       text.trim().length > 0 ||
       Boolean(scene.imageUrl) ||
@@ -70,7 +74,7 @@ export function SessionScenePanel({
     }
 
     await runAction({
-      type: 'scene_started',
+      type: "scene_started",
       sceneKey: scene.sceneKey,
       sceneOrder: scene.order,
       text: text.trim(),
@@ -82,14 +86,16 @@ export function SessionScenePanel({
     activeScene?.visibleTasks.some((task) => task.id === taskId) ?? false;
 
   const isIllustrationVisible = (illustrationId: string) =>
-    activeScene?.visibleIllustrations.some((item) => item.id === illustrationId) ?? false;
+    activeScene?.visibleIllustrations.some(
+      (item) => item.id === illustrationId,
+    ) ?? false;
 
   return (
     <section className="space-y-4 rounded-2xl border border-border bg-card p-5">
       <div className="space-y-1">
-        <h2 className="font-semibold">{t('scenes')}</h2>
+        <h2 className="font-semibold">{t("scenes")}</h2>
         <p className="text-sm text-muted">
-          {isSessionActive ? t('scenesActiveHint') : t('scenesLobbyHint')}
+          {isSessionActive ? t("scenesActiveHint") : t("scenesLobbyHint")}
         </p>
       </div>
 
@@ -102,13 +108,13 @@ export function SessionScenePanel({
           );
           const isNote = scene.type === SceneType.NOTE;
           const active = isSceneActive(scene);
-          const noteText = preview || scene.hostOnlyNotes || '';
+          const noteText = preview || scene.hostOnlyNotes || "";
 
           return (
             <li
               key={scene.id}
               className={`space-y-3 rounded-xl border p-4 ${
-                active ? 'border-accent bg-accent/5' : 'border-border'
+                active ? "border-accent bg-accent/5" : "border-border"
               }`}
             >
               <div className="flex flex-wrap items-start justify-between gap-2">
@@ -119,38 +125,52 @@ export function SessionScenePanel({
                       {t(`sceneTypes.${scene.type}`)}
                     </span>
                     {active ? (
-                      <span className="ml-2 text-xs text-accent">{t('currentScene')}</span>
+                      <span className="ml-2 text-xs text-accent">
+                        {t("currentScene")}
+                      </span>
                     ) : null}
                   </p>
                   {isNote ? (
-                    <p className="whitespace-pre-wrap text-xs text-muted">{noteText}</p>
+                    <p className="whitespace-pre-wrap text-xs text-muted">
+                      {noteText}
+                    </p>
                   ) : active && preview ? (
-                    <p className="whitespace-pre-wrap text-base leading-relaxed">{preview}</p>
+                    <p className="whitespace-pre-wrap text-base leading-relaxed">
+                      {preview}
+                    </p>
                   ) : preview ? (
                     <p className="line-clamp-2 text-xs text-muted">{preview}</p>
                   ) : null}
                   {active && !isNote ? (
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
-                      {scene.imageUrl ? <span>{t('sceneHasBackground')}</span> : null}
+                      {scene.imageUrl ? (
+                        <span>{t("sceneHasBackground")}</span>
+                      ) : null}
                       {scene.illustrations.length > 0 ? (
                         <span>
-                          {t('sceneIllustrationsCount', { count: scene.illustrations.length })}
+                          {t("sceneIllustrationsCount", {
+                            count: scene.illustrations.length,
+                          })}
                         </span>
                       ) : null}
                       <span>
                         {activeScene?.textVisible
-                          ? t('sceneTextVisible')
-                          : t('sceneTextHiddenFromPlayers')}
+                          ? t("sceneTextVisible")
+                          : t("sceneTextHiddenFromPlayers")}
                       </span>
                     </div>
                   ) : !active ? (
                     <>
                       {scene.imageUrl ? (
-                        <p className="text-xs text-muted">{t('sceneHasBackground')}</p>
+                        <p className="text-xs text-muted">
+                          {t("sceneHasBackground")}
+                        </p>
                       ) : null}
                       {scene.illustrations.length > 0 ? (
                         <p className="text-xs text-muted">
-                          {t('sceneIllustrationsCount', { count: scene.illustrations.length })}
+                          {t("sceneIllustrationsCount", {
+                            count: scene.illustrations.length,
+                          })}
                         </p>
                       ) : null}
                     </>
@@ -167,12 +187,16 @@ export function SessionScenePanel({
                         !scene.imageUrl &&
                         scene.illustrations.length === 0 &&
                         !scene.tasks.some((task) =>
-                          pickLocalizedGameText(locale, task.textRu, task.textEn).trim(),
+                          pickLocalizedGameText(
+                            locale,
+                            task.textRu,
+                            task.textEn,
+                          ).trim(),
                         ))
                     }
                     className="min-h-9 shrink-0 rounded-lg bg-accent px-3 text-xs font-semibold text-background disabled:opacity-50"
                   >
-                    {t('startScene')}
+                    {t("startScene")}
                   </button>
                 ) : null}
               </div>
@@ -185,26 +209,28 @@ export function SessionScenePanel({
                       disabled={isBusy}
                       onClick={() =>
                         runAction({
-                          type: 'scene_text_visibility',
+                          type: "scene_text_visibility",
                           visible: !activeScene?.textVisible,
                         })
                       }
                       className="min-h-9 rounded-lg border border-border px-3 text-xs hover:border-accent disabled:opacity-50"
                     >
-                      {activeScene?.textVisible ? t('hideSceneText') : t('showSceneText')}
+                      {activeScene?.textVisible
+                        ? t("hideSceneText")
+                        : t("showSceneText")}
                     </button>
                     <button
                       type="button"
                       disabled={isBusy}
                       onClick={() =>
                         runAction({
-                          type: 'scene_ended',
+                          type: "scene_ended",
                           sceneKey: scene.sceneKey,
                         })
                       }
                       className="min-h-9 rounded-lg border border-border px-3 text-xs hover:border-accent disabled:opacity-50"
                     >
-                      {t('endScene')}
+                      {t("endScene")}
                     </button>
                   </div>
 
@@ -228,15 +254,15 @@ export function SessionScenePanel({
                               return;
                             }
                             await runAction({
-                              type: 'scene_task_visibility',
+                              type: "scene_task_visibility",
                               taskId: task.id,
                               text,
                               visible,
                             });
                           }}
-                          showLabel={t('showTask')}
-                          hideLabel={t('hideTask')}
-                          taskLabel={t('taskNumber', { number: index + 1 })}
+                          showLabel={t("showTask")}
+                          hideLabel={t("hideTask")}
+                          taskLabel={t("taskNumber", { number: index + 1 })}
                         />
                       ))}
                     </ul>
@@ -256,15 +282,17 @@ export function SessionScenePanel({
                               return;
                             }
                             await runAction({
-                              type: 'scene_illustration_visibility',
+                              type: "scene_illustration_visibility",
                               illustrationId: illustration.id,
                               imageUrl: illustration.imageUrl,
                               visible,
                             });
                           }}
-                          showLabel={t('showIllustration')}
-                          hideLabel={t('hideIllustration')}
-                          illustrationLabel={t('illustrationNumber', { number: index + 1 })}
+                          showLabel={t("showIllustration")}
+                          hideLabel={t("hideIllustration")}
+                          illustrationLabel={t("illustrationNumber", {
+                            number: index + 1,
+                          })}
                         />
                       ))}
                     </ul>
@@ -272,7 +300,9 @@ export function SessionScenePanel({
 
                   {scene.hostOnlyNotes ? (
                     <p className="whitespace-pre-wrap border-t border-border pt-3 text-sm leading-relaxed text-muted">
-                      <span className="font-medium text-foreground">{t('hostOnlyNotes')}: </span>
+                      <span className="font-medium text-foreground">
+                        {t("hostOnlyNotes")}:{" "}
+                      </span>
                       {scene.hostOnlyNotes}
                     </p>
                   ) : null}
@@ -355,7 +385,8 @@ function TaskToggleRow({
   return (
     <li className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-xs">
       <span className="min-w-0 flex-1 text-muted">
-        <span className="font-medium text-foreground">{taskLabel}:</span> {preview}
+        <span className="font-medium text-foreground">{taskLabel}:</span>{" "}
+        {preview}
       </span>
       <button
         type="button"

@@ -20,12 +20,12 @@ A credible tip places valuables - collector's «El Dorado», not a magic city - 
 
 ## Tone
 
-| OK | Not OK |
-|----|--------|
-| Jungle, maps, boats, camp | Magic, curses, monsters |
-| Gold, jewels, historical myth | Supernatural guardians |
-| Rival expedition, locals, weather | Sci-fi tech |
-| Injury, exhaustion, moral choices | Paranormal visions |
+| OK                                | Not OK                  |
+| --------------------------------- | ----------------------- |
+| Jungle, maps, boats, camp         | Magic, curses, monsters |
+| Gold, jewels, historical myth     | Supernatural guardians  |
+| Rival expedition, locals, weather | Sci-fi tech             |
+| Injury, exhaustion, moral choices | Paranormal visions      |
 
 Legends are **human rumors**, payoff is physical treasure (or empty ruin).
 
@@ -43,39 +43,39 @@ Suggested skills (host can adjust): Navigation, Survival, Medicine, Persuasion, 
 
 ### Act 1 - The Briefing / Брифинг
 
-| Scene | Host beat | Player agency |
-|-------|-----------|---------------|
-| `briefing` | Sponsor explains rumor, shows map fragment | Questions, team roles |
-| `gear` | Budget and loadout | Choose equipment tradeoffs |
-| `departure` | Boat upriver, heat, first night | Watch, talk to guide NPC |
+| Scene       | Host beat                                  | Player agency              |
+| ----------- | ------------------------------------------ | -------------------------- |
+| `briefing`  | Sponsor explains rumor, shows map fragment | Questions, team roles      |
+| `gear`      | Budget and loadout                         | Choose equipment tradeoffs |
+| `departure` | Boat upriver, heat, first night            | Watch, talk to guide NPC   |
 
 ### Act 2 - Into the Green / В зелени
 
-| Scene | Host beat | Player agency |
-|-------|-----------|---------------|
-| `rapids` | Boat damaged | Repair, portage, skill checks |
-| `trail` | Jungle march, illness risk | Route choice, care for sick |
-| `camp` | Rival camp spotted nearby | Negotiate, sneak, confront |
-| `ruins` | Stone structures, old camp | Search, map puzzle (real-world logic) |
+| Scene    | Host beat                  | Player agency                         |
+| -------- | -------------------------- | ------------------------------------- |
+| `rapids` | Boat damaged               | Repair, portage, skill checks         |
+| `trail`  | Jungle march, illness risk | Route choice, care for sick           |
+| `camp`   | Rival camp spotted nearby  | Negotiate, sneak, confront            |
+| `ruins`  | Stone structures, old camp | Search, map puzzle (real-world logic) |
 
 ### Act 3 - What Glitters / Что блестит
 
-| Scene | Host beat | Player agency |
-|-------|-----------|---------------|
-| `chamber` | Sealed room, crates | Open safely vs force |
-| `treasure` | Contents revealed (full, partial, or fake) | Split, hide, report |
-| `exfil` | Return with loot, rivals, storm | Ending branches |
+| Scene      | Host beat                                  | Player agency        |
+| ---------- | ------------------------------------------ | -------------------- |
+| `chamber`  | Sealed room, crates                        | Open safely vs force |
+| `treasure` | Contents revealed (full, partial, or fake) | Split, hide, report  |
+| `exfil`    | Return with loot, rivals, storm            | Ending branches      |
 
 ---
 
 ## Endings (examples)
 
-| ID | RU | EN |
-|----|----|-----|
-| `ending_rich` | Выход с добычей | Exit with treasure |
-| `ending_empty` | Легенда оказалась пустой | Legend was empty |
-| `ending_betrayal` | Кто-то из команды исчез с частью | Betrayal split |
-| `ending_lost` | Экспедиция сорвана, выжили | Mission failed, survived |
+| ID                | RU                               | EN                       |
+| ----------------- | -------------------------------- | ------------------------ |
+| `ending_rich`     | Выход с добычей                  | Exit with treasure       |
+| `ending_empty`    | Легенда оказалась пустой         | Legend was empty         |
+| `ending_betrayal` | Кто-то из команды исчез с частью | Betrayal split           |
+| `ending_lost`     | Экспедиция сорвана, выжили       | Mission failed, survived |
 
 ---
 
@@ -92,13 +92,13 @@ Stored in `hostOnlyNotes` per scene in game editor.
 
 ## Media
 
-| Asset | Notes |
-|-------|-------|
-| Cover | Jungle river, golden light, realistic |
-| `briefing` | Office or map table |
-| `rapids` | River boat |
-| `ruins` | Mossy stone, no fantasy glyphs |
-| `chamber` | Crates, dust, lantern |
+| Asset      | Notes                                 |
+| ---------- | ------------------------------------- |
+| Cover      | Jungle river, golden light, realistic |
+| `briefing` | Office or map table                   |
+| `rapids`   | River boat                            |
+| `ruins`    | Mossy stone, no fantasy glyphs        |
+| `chamber`  | Crates, dust, lantern                 |
 
 Upload via Captain's Bridge -> MinIO/R2.
 

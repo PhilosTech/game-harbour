@@ -1,9 +1,9 @@
-import { AppLocaleBar } from '@/components/shared/app-locale-bar';
-import { LocaleHtmlLang } from '@/components/shared/locale-html-lang';
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, setRequestLocale } from 'next-intl/server';
-import { notFound } from 'next/navigation';
-import { routing } from '@/i18n/routing';
+import { AppLocaleBar } from "@/components/shared/app-locale-bar";
+import { LocaleHtmlLang } from "@/components/shared/locale-html-lang";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
+import { routing } from "@/i18n/routing";
 
 type Props = {
   children: React.ReactNode;
@@ -17,7 +17,7 @@ export function generateStaticParams() {
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params;
 
-  if (!routing.locales.includes(locale as 'ru' | 'en')) {
+  if (!routing.locales.includes(locale as "ru" | "en")) {
     notFound();
   }
 

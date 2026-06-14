@@ -1,4 +1,4 @@
-import { LocaleSwitcher } from '@/components/harbour/locale-switcher';
+import { LocaleSwitcher } from "@/components/harbour/locale-switcher";
 
 export function AppLocaleBar() {
   return (

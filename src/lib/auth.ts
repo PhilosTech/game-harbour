@@ -1,8 +1,8 @@
-import NextAuth from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
-import { z } from 'zod';
-import { findHostByUsername, normalizeUsername } from '@/server/hosts';
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { z } from "zod";
+import { findHostByUsername, normalizeUsername } from "@/server/hosts";
 
 const credentialsSchema = z.object({
   username: z.string().min(3),
@@ -10,12 +10,12 @@ const credentialsSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: 'jwt' },
+  session: { strategy: "jwt" },
   providers: [
     Credentials({
       credentials: {
-        username: { label: 'Username', type: 'text' },
-        password: { label: 'Password', type: 'password' },
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
         const parsed = credentialsSchema.safeParse(credentials);
@@ -57,7 +57,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     session: async ({ session, token }) => {
       if (session.user) {
-        session.user.id = token.sub ?? '';
+        session.user.id = token.sub ?? "";
         session.user.role = token.role as string | undefined;
         session.user.username = token.username as string | undefined;
       }

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0b1020"/>
+
+  <!-- Subtle grid lines -->
+  <line x1="0" y1="315" x2="1200" y2="315" stroke="#d4a853" stroke-width="1" opacity="0.08"/>
+  <line x1="600" y1="0" x2="600" y2="630" stroke="#d4a853" stroke-width="1" opacity="0.08"/>
+
+  <!-- GH letters background -->
+  <text x="220" y="315" text-anchor="middle" dominant-baseline="central" font-family="Georgia, 'Times New Roman', serif" font-size="360" font-weight="bold" fill="#d4a853" opacity="0.1" textLength="340" lengthAdjust="spacingAndGlyphs">GH</text>
+
+  <!-- Ship wheel icon (centered left area) -->
+  <g transform="translate(220,315)" fill="#d4a853">
+    <circle cx="0" cy="0" r="110" fill="none" stroke="#d4a853" stroke-width="13"/>
+    <line x1="0" y1="-28" x2="0" y2="-128" stroke="#d4a853" stroke-width="11" stroke-linecap="round"/>
+    <line x1="0" y1="28" x2="0" y2="128" stroke="#d4a853" stroke-width="11" stroke-linecap="round"/>
+    <line x1="-28" y1="0" x2="-128" y2="0" stroke="#d4a853" stroke-width="11" stroke-linecap="round"/>
+    <line x1="28" y1="0" x2="128" y2="0" stroke="#d4a853" stroke-width="11" stroke-linecap="round"/>
+    <line x1="-20" y1="-20" x2="-90" y2="-90" stroke="#d4a853" stroke-width="11" stroke-linecap="round"/>
+    <line x1="20" y1="20" x2="90" y2="90" stroke="#d4a853" stroke-width="11" stroke-linecap="round"/>
+    <line x1="20" y1="-20" x2="90" y2="-90" stroke="#d4a853" stroke-width="11" stroke-linecap="round"/>
+    <line x1="-20" y1="20" x2="-90" y2="90" stroke="#d4a853" stroke-width="11" stroke-linecap="round"/>
+    <circle cx="0" cy="-128" r="12"/>
+    <circle cx="0" cy="128" r="12"/>
+    <circle cx="-128" cy="0" r="12"/>
+    <circle cx="128" cy="0" r="12"/>
+    <circle cx="-90" cy="-90" r="12"/>
+    <circle cx="90" cy="90" r="12"/>
+    <circle cx="90" cy="-90" r="12"/>
+    <circle cx="-90" cy="90" r="12"/>
+    <circle cx="0" cy="0" r="28" fill="none" stroke="#d4a853" stroke-width="12"/>
+    <circle cx="0" cy="0" r="9"/>
+  </g>
+
+  <!-- Divider -->
+  <line x1="390" y1="180" x2="390" y2="450" stroke="#d4a853" stroke-width="1.5" opacity="0.3"/>
+
+  <!-- Text content -->
+  <text x="450" y="255" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="bold" fill="#d4a853">Game Harbour</text>
+  <text x="453" y="320" font-family="Georgia, 'Times New Roman', serif" font-size="28" fill="#d4a853" opacity="0.6">A harbour for narrative games</text>
+  <text x="453" y="358" font-family="Georgia, 'Times New Roman', serif" font-size="28" fill="#d4a853" opacity="0.6">with a professional host</text>
+
+  <!-- Bottom accent line -->
+  <rect x="450" y="410" width="120" height="3" fill="#d4a853" opacity="0.5"/>
+</svg>

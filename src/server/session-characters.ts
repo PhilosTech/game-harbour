@@ -1,14 +1,19 @@
-import { SessionPhase, type GameHeroSlot, type GameTrait, type SessionPlayer } from '@prisma/client';
-import { db } from '@/lib/db';
-import { generateTraitRoll } from '@/session-engine/trait-pool';
+import {
+  SessionPhase,
+  type GameHeroSlot,
+  type GameTrait,
+  type SessionPlayer,
+} from "@prisma/client";
+import { db } from "@/lib/db";
+import { generateTraitRoll } from "@/session-engine/trait-pool";
 import {
   EMPTY_CHARACTER_JSON,
   type LobbyHeroSlotSnapshot,
   type LobbyTraitSnapshot,
   type PlayerCharacterSnapshot,
   parseStoredCharacterJson,
-} from '@/types/character';
-import { SessionError } from '@/server/sessions';
+} from "@/types/character";
+import { SessionError } from "@/server/sessions";
 
 type PlayerWithSlot = SessionPlayer & {
   heroSlot: GameHeroSlot | null;
@@ -16,7 +21,10 @@ type PlayerWithSlot = SessionPlayer & {
 
 function assertLobbyPhase(phase: SessionPhase) {
   if (phase !== SessionPhase.LOBBY) {
-    throw new SessionError('Lobby actions are only allowed before the game starts', 'NOT_LOBBY');
+    throw new SessionError(
+      "Lobby actions are only allowed before the game starts",
+      "NOT_LOBBY",
+    );
   }
 }
 
@@ -30,7 +38,7 @@ async function getPlayerInLobby(sessionId: string, playerId: string) {
   });
 
   if (!player) {
-    throw new SessionError('Player not found', 'NOT_FOUND');
+    throw new SessionError("Player not found", "NOT_FOUND");
   }
 
   assertLobbyPhase(player.session.phase);
@@ -47,21 +55,21 @@ export function buildPlayerCharacterSnapshot(
   if (!slot) {
     return {
       heroSlotId: null,
-      heroLabelRu: '',
-      heroLabelEn: '',
-      strengthTraitRu: '',
-      strengthTraitEn: '',
+      heroLabelRu: "",
+      heroLabelEn: "",
+      strengthTraitRu: "",
+      strengthTraitEn: "",
       strengthValue: 0,
-      weaknessTraitRu: '',
-      weaknessTraitEn: '',
+      weaknessTraitRu: "",
+      weaknessTraitEn: "",
       weaknessValue: 0,
       rolledTraits: character.rolledTraits
         ? character.rolledTraits.map((rolled) => {
             const trait = traits.find((item) => item.id === rolled.traitId);
             return {
               traitId: rolled.traitId,
-              labelRu: trait?.labelRu ?? '',
-              labelEn: trait?.labelEn ?? '',
+              labelRu: trait?.labelRu ?? "",
+              labelEn: trait?.labelEn ?? "",
               value: rolled.value,
             };
           })
@@ -85,8 +93,8 @@ export function buildPlayerCharacterSnapshot(
           const trait = traits.find((item) => item.id === rolled.traitId);
           return {
             traitId: rolled.traitId,
-            labelRu: trait?.labelRu ?? '',
-            labelEn: trait?.labelEn ?? '',
+            labelRu: trait?.labelRu ?? "",
+            labelEn: trait?.labelEn ?? "",
             value: rolled.value,
           };
         })
@@ -137,7 +145,7 @@ export async function claimHeroSlot(
   const character = parseStoredCharacterJson(player.characterJson);
 
   if (character.isReady) {
-    throw new SessionError('Character is already locked', 'ALREADY_READY');
+    throw new SessionError("Character is already locked", "ALREADY_READY");
   }
 
   const slot = await db.gameHeroSlot.findFirst({
@@ -145,7 +153,7 @@ export async function claimHeroSlot(
   });
 
   if (!slot) {
-    throw new SessionError('Hero slot not found', 'NOT_FOUND');
+    throw new SessionError("Hero slot not found", "NOT_FOUND");
   }
 
   const taken = await db.sessionPlayer.findFirst({
@@ -158,7 +166,7 @@ export async function claimHeroSlot(
   });
 
   if (taken) {
-    throw new SessionError('Hero slot is already taken', 'SLOT_TAKEN');
+    throw new SessionError("Hero slot is already taken", "SLOT_TAKEN");
   }
 
   return db.sessionPlayer.update({
@@ -175,20 +183,20 @@ export async function rerollPlayerTraits(sessionId: string, playerId: string) {
   const character = parseStoredCharacterJson(player.characterJson);
 
   if (!player.heroSlotId) {
-    throw new SessionError('Pick a hero first', 'NO_HERO');
+    throw new SessionError("Pick a hero first", "NO_HERO");
   }
 
   if (character.isReady) {
-    throw new SessionError('Character is already locked', 'ALREADY_READY');
+    throw new SessionError("Character is already locked", "ALREADY_READY");
   }
 
   const game = await db.gameTemplate.findUnique({
     where: { id: player.session.gameId },
-    include: { traits: { orderBy: { order: 'asc' } } },
+    include: { traits: { orderBy: { order: "asc" } } },
   });
 
   if (!game || game.traits.length < 3) {
-    throw new SessionError('Game traits are not configured', 'INVALID');
+    throw new SessionError("Game traits are not configured", "INVALID");
   }
 
   const rolledTraits = generateTraitRoll(
@@ -212,11 +220,11 @@ export async function markPlayerReady(sessionId: string, playerId: string) {
   const character = parseStoredCharacterJson(player.characterJson);
 
   if (!player.heroSlotId) {
-    throw new SessionError('Pick a hero first', 'NO_HERO');
+    throw new SessionError("Pick a hero first", "NO_HERO");
   }
 
   if (!character.rolledTraits || character.rolledTraits.length === 0) {
-    throw new SessionError('Generate traits before marking ready', 'NO_TRAITS');
+    throw new SessionError("Generate traits before marking ready", "NO_TRAITS");
   }
 
   if (character.isReady) {

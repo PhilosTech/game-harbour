@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const textField = z.string().trim();
 
@@ -16,8 +16,8 @@ export const bilingualGameContentSchema = z
     if (!hasRu && !hasEn) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'LANGUAGE_REQUIRED',
-        path: ['titleEn'],
+        message: "LANGUAGE_REQUIRED",
+        path: ["titleEn"],
       });
       return;
     }
@@ -26,15 +26,15 @@ export const bilingualGameContentSchema = z
       if (!data.titleRu) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'RU_TITLE_REQUIRED',
-          path: ['titleRu'],
+          message: "RU_TITLE_REQUIRED",
+          path: ["titleRu"],
         });
       }
       if (!data.descriptionRu) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'RU_DESCRIPTION_REQUIRED',
-          path: ['descriptionRu'],
+          message: "RU_DESCRIPTION_REQUIRED",
+          path: ["descriptionRu"],
         });
       }
     }
@@ -43,15 +43,15 @@ export const bilingualGameContentSchema = z
       if (!data.titleEn) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'EN_TITLE_REQUIRED',
-          path: ['titleEn'],
+          message: "EN_TITLE_REQUIRED",
+          path: ["titleEn"],
         });
       }
       if (!data.descriptionEn) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'EN_DESCRIPTION_REQUIRED',
-          path: ['descriptionEn'],
+          message: "EN_DESCRIPTION_REQUIRED",
+          path: ["descriptionEn"],
         });
       }
     }
@@ -67,8 +67,8 @@ function refineBilingualBody(
   if (!hasRu && !hasEn) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'SCENE_LANGUAGE_REQUIRED',
-      path: ['contentEn'],
+      message: "SCENE_LANGUAGE_REQUIRED",
+      path: ["contentEn"],
     });
     return;
   }
@@ -76,16 +76,16 @@ function refineBilingualBody(
   if (hasRu && !data.contentRu) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'RU_CONTENT_REQUIRED',
-      path: ['contentRu'],
+      message: "RU_CONTENT_REQUIRED",
+      path: ["contentRu"],
     });
   }
 
   if (hasEn && !data.contentEn) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'EN_CONTENT_REQUIRED',
-      path: ['contentEn'],
+      message: "EN_CONTENT_REQUIRED",
+      path: ["contentEn"],
     });
   }
 }
@@ -107,7 +107,7 @@ export function pickLocalizedGameText(
   const ruText = ru.trim();
   const enText = en.trim();
 
-  if (locale === 'en') {
+  if (locale === "en") {
     return enText || ruText;
   }
 

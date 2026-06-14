@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { getStoredPlayerSession } from '@/lib/player-session-storage';
-import { PlayJoinForm } from '@/components/player/play-join-form';
-import { SessionRoom } from '@/components/player/session-room';
-import { useTranslations } from 'next-intl';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import type { StoredPlayerSession } from '@/lib/player-session-storage';
+import { getStoredPlayerSession } from "@/lib/player-session-storage";
+import { PlayJoinForm } from "@/components/player/play-join-form";
+import { SessionRoom } from "@/components/player/session-room";
+import { useTranslations } from "next-intl";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import type { StoredPlayerSession } from "@/lib/player-session-storage";
 
 export default function PlayRoomPage() {
   const params = useParams<{ locale: string; sessionId: string }>();
   const router = useRouter();
-  const t = useTranslations('play');
+  const t = useTranslations("play");
   const [stored, setStored] = useState<StoredPlayerSession | null | undefined>(
     undefined,
   );
@@ -31,14 +31,14 @@ export default function PlayRoomPage() {
   if (!stored || stored.sessionId !== params.sessionId) {
     return (
       <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-4 py-8">
-        <p className="text-center text-sm text-muted">{t('rejoinPrompt')}</p>
+        <p className="text-center text-sm text-muted">{t("rejoinPrompt")}</p>
         <PlayJoinForm />
         <button
           type="button"
           onClick={() => router.push(`/${params.locale}`)}
           className="text-sm text-muted underline"
         >
-          {t('backToHome')}
+          {t("backToHome")}
         </button>
       </main>
     );

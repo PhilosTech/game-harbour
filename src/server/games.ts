@@ -1,27 +1,27 @@
-import { GameStatus, GameVisibility, SceneType } from '@prisma/client';
-import { z } from 'zod';
+import { GameStatus, GameVisibility, SceneType } from "@prisma/client";
+import { z } from "zod";
 import {
   bilingualGameContentSchema,
   bilingualSceneBodySchema,
   updateGameSchema,
-} from '@/lib/game-content-i18n';
-import { db } from '@/lib/db';
-import { sceneKeySchema } from '@/lib/scene-key';
-import { createUniqueGameSlug } from '@/lib/slug';
-import { importedSceneSchema } from '@/lib/ai-scene-import';
+} from "@/lib/game-content-i18n";
+import { db } from "@/lib/db";
+import { sceneKeySchema } from "@/lib/scene-key";
+import { createUniqueGameSlug } from "@/lib/slug";
+import { importedSceneSchema } from "@/lib/ai-scene-import";
 
 export class GameError extends Error {
   constructor(
     message: string,
     public code:
-      | 'NOT_FOUND'
-      | 'FORBIDDEN'
-      | 'NO_SCENES'
-      | 'NOT_EDITABLE'
-      | 'SCENE_KEY_TAKEN',
+      | "NOT_FOUND"
+      | "FORBIDDEN"
+      | "NO_SCENES"
+      | "NOT_EDITABLE"
+      | "SCENE_KEY_TAKEN",
   ) {
     super(message);
-    this.name = 'GameError';
+    this.name = "GameError";
   }
 }
 
@@ -29,7 +29,7 @@ export const createGameSchema = bilingualGameContentSchema.extend({
   visibility: z.nativeEnum(GameVisibility).default(GameVisibility.PRIVATE),
 });
 
-export { sceneKeySchema } from '@/lib/scene-key';
+export { sceneKeySchema } from "@/lib/scene-key";
 
 export const createSceneSchema = z
   .object({
@@ -52,7 +52,7 @@ export const updateSceneSchema = z
   .object({
     type: z.nativeEnum(SceneType),
     hostOnlyNotes: z.string().trim().max(2000),
-    imageUrl: z.string().trim().max(2000).optional().default(''),
+    imageUrl: z.string().trim().max(2000).optional().default(""),
     tasks: z.array(sceneTaskInputSchema).max(20).default([]),
     illustrations: z.array(sceneIllustrationInputSchema).max(20).default([]),
   })
@@ -61,7 +61,7 @@ export const updateSceneSchema = z
 export async function getHostOwnGames(hostId: string) {
   return db.gameTemplate.findMany({
     where: { hostId },
-    orderBy: { updatedAt: 'desc' },
+    orderBy: { updatedAt: "desc" },
     include: {
       _count: { select: { scenes: true } },
     },
@@ -74,7 +74,7 @@ export async function getCommunityGames(excludeHostId: string) {
       hostId: { not: null, notIn: [excludeHostId] },
       visibility: GameVisibility.PUBLIC,
     },
-    orderBy: { updatedAt: 'desc' },
+    orderBy: { updatedAt: "desc" },
     include: {
       _count: { select: { scenes: true } },
       host: {
@@ -109,24 +109,27 @@ export async function createHostGame(
   });
 }
 
-export async function duplicateGameForHost(hostId: string, sourceGameId: string) {
+export async function duplicateGameForHost(
+  hostId: string,
+  sourceGameId: string,
+) {
   const source = await db.gameTemplate.findFirst({
     where: { id: sourceGameId },
     include: {
-      heroSlots: { orderBy: { order: 'asc' } },
-      traits: { orderBy: { order: 'asc' } },
+      heroSlots: { orderBy: { order: "asc" } },
+      traits: { orderBy: { order: "asc" } },
       scenes: {
-        orderBy: { order: 'asc' },
+        orderBy: { order: "asc" },
         include: {
-          tasks: { orderBy: { order: 'asc' } },
-          illustrations: { orderBy: { order: 'asc' } },
+          tasks: { orderBy: { order: "asc" } },
+          illustrations: { orderBy: { order: "asc" } },
         },
       },
     },
   });
 
   if (!source) {
-    throw new GameError('Game not found', 'NOT_FOUND');
+    throw new GameError("Game not found", "NOT_FOUND");
   }
 
   const canDuplicate =
@@ -135,7 +138,7 @@ export async function duplicateGameForHost(hostId: string, sourceGameId: string)
     source.visibility === GameVisibility.PUBLIC;
 
   if (!canDuplicate) {
-    throw new GameError('Forbidden', 'FORBIDDEN');
+    throw new GameError("Forbidden", "FORBIDDEN");
   }
 
   const slug = await createUniqueGameSlug(`${source.slug}-copy`);
@@ -232,7 +235,7 @@ export async function assertGameHasScenes(gameId: string) {
   const sceneCount = await db.gameScene.count({ where: { gameId } });
 
   if (sceneCount === 0) {
-    throw new GameError('Game has no scenes', 'NO_SCENES');
+    throw new GameError("Game has no scenes", "NO_SCENES");
   }
 }
 
@@ -242,13 +245,13 @@ export async function getEditableHostGame(hostId: string, gameId: string) {
   return db.gameTemplate.findUniqueOrThrow({
     where: { id: gameId },
     include: {
-      heroSlots: { orderBy: { order: 'asc' } },
-      traits: { orderBy: { order: 'asc' } },
+      heroSlots: { orderBy: { order: "asc" } },
+      traits: { orderBy: { order: "asc" } },
       scenes: {
-        orderBy: { order: 'asc' },
+        orderBy: { order: "asc" },
         include: {
-          tasks: { orderBy: { order: 'asc' } },
-          illustrations: { orderBy: { order: 'asc' } },
+          tasks: { orderBy: { order: "asc" } },
+          illustrations: { orderBy: { order: "asc" } },
         },
       },
       _count: { select: { scenes: true } },
@@ -262,7 +265,7 @@ const setupLabelSchema = z
     labelEn: z.string().trim().max(80),
   })
   .refine((item) => Boolean(item.labelRu || item.labelEn), {
-    message: 'LABEL_REQUIRED',
+    message: "LABEL_REQUIRED",
   });
 
 const heroSlotSetupSchema = setupLabelSchema
@@ -278,24 +281,28 @@ const heroSlotSetupSchema = setupLabelSchema
     if (!slot.strengthTraitRu && !slot.strengthTraitEn) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'STRENGTH_REQUIRED',
-        path: ['strengthTraitRu'],
+        message: "STRENGTH_REQUIRED",
+        path: ["strengthTraitRu"],
       });
     }
     if (!slot.weaknessTraitRu && !slot.weaknessTraitEn) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'WEAKNESS_REQUIRED',
-        path: ['weaknessTraitRu'],
+        message: "WEAKNESS_REQUIRED",
+        path: ["weaknessTraitRu"],
       });
     }
-    const strengthKey = (slot.strengthTraitEn || slot.strengthTraitRu).toLowerCase();
-    const weaknessKey = (slot.weaknessTraitEn || slot.weaknessTraitRu).toLowerCase();
+    const strengthKey = (
+      slot.strengthTraitEn || slot.strengthTraitRu
+    ).toLowerCase();
+    const weaknessKey = (
+      slot.weaknessTraitEn || slot.weaknessTraitRu
+    ).toLowerCase();
     if (strengthKey && weaknessKey && strengthKey === weaknessKey) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'STRENGTH_WEAKNESS_SAME',
-        path: ['weaknessTraitRu'],
+        message: "STRENGTH_WEAKNESS_SAME",
+        path: ["weaknessTraitRu"],
       });
     }
   });
@@ -313,15 +320,19 @@ export const updateGameSetupSchema = z
     const weaknessKeys = new Set<string>();
 
     for (const [index, slot] of data.heroSlots.entries()) {
-      const strengthKey = (slot.strengthTraitEn || slot.strengthTraitRu).toLowerCase();
-      const weaknessKey = (slot.weaknessTraitEn || slot.weaknessTraitRu).toLowerCase();
+      const strengthKey = (
+        slot.strengthTraitEn || slot.strengthTraitRu
+      ).toLowerCase();
+      const weaknessKey = (
+        slot.weaknessTraitEn || slot.weaknessTraitRu
+      ).toLowerCase();
 
       if (strengthKey) {
         if (strengthKeys.has(strengthKey)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'DUPLICATE_STRENGTH',
-            path: ['heroSlots', index, 'strengthTraitRu'],
+            message: "DUPLICATE_STRENGTH",
+            path: ["heroSlots", index, "strengthTraitRu"],
           });
         }
         strengthKeys.add(strengthKey);
@@ -331,8 +342,8 @@ export const updateGameSetupSchema = z
         if (weaknessKeys.has(weaknessKey)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'DUPLICATE_WEAKNESS',
-            path: ['heroSlots', index, 'weaknessTraitRu'],
+            message: "DUPLICATE_WEAKNESS",
+            path: ["heroSlots", index, "weaknessTraitRu"],
           });
         }
         weaknessKeys.add(weaknessKey);
@@ -341,7 +352,7 @@ export const updateGameSetupSchema = z
   });
 
 export const importScenesSchema = z.object({
-  mode: z.enum(['append', 'replace']).default('append'),
+  mode: z.enum(["append", "replace"]).default("append"),
   scenes: z.array(importedSceneSchema).min(1).max(50),
 });
 
@@ -391,9 +402,9 @@ export async function updateGameSetup(
         defaultWeaknessValue: data.defaultWeaknessValue,
       },
       include: {
-        heroSlots: { orderBy: { order: 'asc' } },
-        traits: { orderBy: { order: 'asc' } },
-        scenes: { orderBy: { order: 'asc' } },
+        heroSlots: { orderBy: { order: "asc" } },
+        traits: { orderBy: { order: "asc" } },
+        scenes: { orderBy: { order: "asc" } },
       },
     });
   });
@@ -407,7 +418,7 @@ export async function importGameScenes(
   await assertGameIsEditable(hostId, gameId);
   const data = importScenesSchema.parse(input);
 
-  if (data.mode === 'replace') {
+  if (data.mode === "replace") {
     await db.gameScene.deleteMany({ where: { gameId } });
   }
 
@@ -416,11 +427,14 @@ export async function importGameScenes(
     select: { sceneKey: true, order: true },
   });
   const existingKeys = new Set(existing.map((scene) => scene.sceneKey));
-  let nextOrder = existing.reduce((max, scene) => Math.max(max, scene.order), 0);
+  let nextOrder = existing.reduce(
+    (max, scene) => Math.max(max, scene.order),
+    0,
+  );
 
   for (const scene of data.scenes) {
     if (existingKeys.has(scene.sceneKey)) {
-      throw new GameError('Scene key already exists', 'SCENE_KEY_TAKEN');
+      throw new GameError("Scene key already exists", "SCENE_KEY_TAKEN");
     }
     existingKeys.add(scene.sceneKey);
     nextOrder += 1;
@@ -461,10 +475,10 @@ export async function importGameScenes(
 
   return db.gameScene.findMany({
     where: { gameId },
-    orderBy: { order: 'asc' },
+    orderBy: { order: "asc" },
     include: {
-      tasks: { orderBy: { order: 'asc' } },
-      illustrations: { orderBy: { order: 'asc' } },
+      tasks: { orderBy: { order: "asc" } },
+      illustrations: { orderBy: { order: "asc" } },
     },
   });
 }
@@ -502,12 +516,12 @@ export async function createGameScene(
   });
 
   if (existingKey) {
-    throw new GameError('Scene key already exists', 'SCENE_KEY_TAKEN');
+    throw new GameError("Scene key already exists", "SCENE_KEY_TAKEN");
   }
 
   const lastScene = await db.gameScene.findFirst({
     where: { gameId },
-    orderBy: { order: 'desc' },
+    orderBy: { order: "desc" },
     select: { order: true },
   });
 
@@ -541,7 +555,7 @@ export async function updateGameScene(
   });
 
   if (!scene) {
-    throw new GameError('Scene not found', 'NOT_FOUND');
+    throw new GameError("Scene not found", "NOT_FOUND");
   }
 
   return db.$transaction(async (tx) => {
@@ -583,14 +597,18 @@ export async function updateGameScene(
         playerTaskEn: data.tasks[0]?.textEn || null,
       },
       include: {
-        tasks: { orderBy: { order: 'asc' } },
-        illustrations: { orderBy: { order: 'asc' } },
+        tasks: { orderBy: { order: "asc" } },
+        illustrations: { orderBy: { order: "asc" } },
       },
     });
   });
 }
 
-export async function deleteGameScene(hostId: string, gameId: string, sceneId: string) {
+export async function deleteGameScene(
+  hostId: string,
+  gameId: string,
+  sceneId: string,
+) {
   await assertGameIsEditable(hostId, gameId);
 
   const scene = await db.gameScene.findFirst({
@@ -599,7 +617,7 @@ export async function deleteGameScene(hostId: string, gameId: string, sceneId: s
   });
 
   if (!scene) {
-    throw new GameError('Scene not found', 'NOT_FOUND');
+    throw new GameError("Scene not found", "NOT_FOUND");
   }
 
   await db.gameScene.delete({ where: { id: sceneId } });
@@ -612,15 +630,15 @@ export async function assertGameIsEditable(hostId: string, gameId: string) {
   });
 
   if (!game) {
-    throw new GameError('Game not found', 'NOT_FOUND');
+    throw new GameError("Game not found", "NOT_FOUND");
   }
 
   if (game.hostId !== hostId) {
-    throw new GameError('Forbidden', 'FORBIDDEN');
+    throw new GameError("Forbidden", "FORBIDDEN");
   }
 
   if (game.visibility === GameVisibility.PUBLIC) {
-    throw new GameError('Public games cannot be edited', 'NOT_EDITABLE');
+    throw new GameError("Public games cannot be edited", "NOT_EDITABLE");
   }
 
   return game;
@@ -633,11 +651,11 @@ export async function makeGamePublic(hostId: string, gameId: string) {
   });
 
   if (!game) {
-    throw new GameError('Game not found', 'NOT_FOUND');
+    throw new GameError("Game not found", "NOT_FOUND");
   }
 
   if (game.hostId !== hostId) {
-    throw new GameError('Forbidden', 'FORBIDDEN');
+    throw new GameError("Forbidden", "FORBIDDEN");
   }
 
   if (game.visibility === GameVisibility.PUBLIC) {
@@ -663,11 +681,11 @@ export async function assertHostOwnsGame(hostId: string, gameId: string) {
   });
 
   if (!game) {
-    throw new GameError('Game not found', 'NOT_FOUND');
+    throw new GameError("Game not found", "NOT_FOUND");
   }
 
   if (game.hostId !== hostId) {
-    throw new GameError('Forbidden', 'FORBIDDEN');
+    throw new GameError("Forbidden", "FORBIDDEN");
   }
 
   return game;
@@ -680,7 +698,7 @@ export async function assertHostCanRunGame(hostId: string, gameId: string) {
   });
 
   if (!game) {
-    throw new GameError('Game not found', 'NOT_FOUND');
+    throw new GameError("Game not found", "NOT_FOUND");
   }
 
   if (game.hostId === hostId) {
@@ -691,5 +709,5 @@ export async function assertHostCanRunGame(hostId: string, gameId: string) {
     return game;
   }
 
-  throw new GameError('Forbidden', 'FORBIDDEN');
+  throw new GameError("Forbidden", "FORBIDDEN");
 }

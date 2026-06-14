@@ -1,14 +1,14 @@
-import { SessionPhase } from '@prisma/client';
-import { db } from '@/lib/db';
-import { assertGameHasScenes, assertHostCanRunGame } from '@/server/games';
-import { generateRoomCode } from '@/session-engine/room-code';
-import { buildRoomState } from '@/session-engine/room-state';
+import { SessionPhase } from "@prisma/client";
+import { db } from "@/lib/db";
+import { assertGameHasScenes, assertHostCanRunGame } from "@/server/games";
+import { generateRoomCode } from "@/session-engine/room-code";
+import { buildRoomState } from "@/session-engine/room-state";
 import {
   formatDisplayName,
   isValidDisplayName,
   normalizeDisplayNameKey,
-} from '@/session-engine/player-name';
-import type { PlayerNameCheckResult } from '@/types/player-name-check';
+} from "@/session-engine/player-name";
+import type { PlayerNameCheckResult } from "@/types/player-name-check";
 import {
   buildLobbyHeroSlots,
   buildLobbyTraits,
@@ -16,28 +16,30 @@ import {
   claimHeroSlot,
   markPlayerReady,
   rerollPlayerTraits,
-} from '@/server/session-characters';
+} from "@/server/session-characters";
+import { generateTraitRoll } from "@/session-engine/trait-pool";
+import { parseStoredCharacterJson } from "@/types/character";
 import type {
   LobbySetupSnapshot,
   PersistedRoomEvent,
   PlayerSnapshot,
   RoomEventPayload,
   RoomState,
-} from '@/session-engine/room-events';
+} from "@/session-engine/room-events";
 
 export { claimHeroSlot, markPlayerReady, rerollPlayerTraits };
 
 export type SessionErrorCode =
-  | 'NOT_FOUND'
-  | 'FORBIDDEN'
-  | 'ENDED'
-  | 'INVALID'
-  | 'NAME_NOT_IN_SESSION'
-  | 'NOT_LOBBY'
-  | 'SLOT_TAKEN'
-  | 'ALREADY_READY'
-  | 'NO_HERO'
-  | 'NO_TRAITS';
+  | "NOT_FOUND"
+  | "FORBIDDEN"
+  | "ENDED"
+  | "INVALID"
+  | "NAME_NOT_IN_SESSION"
+  | "NOT_LOBBY"
+  | "SLOT_TAKEN"
+  | "ALREADY_READY"
+  | "NO_HERO"
+  | "NO_TRAITS";
 
 export class SessionError extends Error {
   constructor(
@@ -45,7 +47,7 @@ export class SessionError extends Error {
     public code: SessionErrorCode,
   ) {
     super(message);
-    this.name = 'SessionError';
+    this.name = "SessionError";
   }
 }
 
@@ -64,11 +66,11 @@ export async function checkPlayerNameInSession(
 ): Promise<PlayerNameCheckResult> {
   const normalizedCode = roomCode.trim().toUpperCase();
   if (!normalizedCode) {
-    return { status: 'invalid_code' };
+    return { status: "invalid_code" };
   }
 
   if (!isValidDisplayName(displayName)) {
-    return { status: 'invalid_name' };
+    return { status: "invalid_name" };
   }
 
   const displayNameKey = normalizeDisplayNameKey(displayName);
@@ -79,11 +81,11 @@ export async function checkPlayerNameInSession(
   });
 
   if (!session) {
-    return { status: 'session_not_found' };
+    return { status: "session_not_found" };
   }
 
   if (session.phase === SessionPhase.ENDED) {
-    return { status: 'session_ended', phase: session.phase };
+    return { status: "session_ended", phase: session.phase };
   }
 
   const existingPlayer = await db.sessionPlayer.findUnique({
@@ -97,14 +99,14 @@ export async function checkPlayerNameInSession(
   });
 
   if (existingPlayer) {
-    return { status: 'reconnect', phase: session.phase };
+    return { status: "reconnect", phase: session.phase };
   }
 
   if (session.phase === SessionPhase.ACTIVE) {
-    return { status: 'blocked', phase: session.phase };
+    return { status: "blocked", phase: session.phase };
   }
 
-  return { status: 'available', phase: session.phase };
+  return { status: "available", phase: session.phase };
 }
 
 async function createUniqueRoomCode(): Promise<string> {
@@ -118,7 +120,7 @@ async function createUniqueRoomCode(): Promise<string> {
       return roomCode;
     }
   }
-  throw new SessionError('Could not allocate room code', 'INVALID');
+  throw new SessionError("Could not allocate room code", "INVALID");
 }
 
 export async function createLiveSession(hostId: string, gameId: string) {
@@ -147,7 +149,7 @@ export async function joinSession(
   displayName: string,
 ): Promise<JoinSessionResult> {
   if (!isValidDisplayName(displayName)) {
-    throw new SessionError('Invalid display name', 'INVALID');
+    throw new SessionError("Invalid display name", "INVALID");
   }
 
   const formattedName = formatDisplayName(displayName);
@@ -158,11 +160,11 @@ export async function joinSession(
   });
 
   if (!session) {
-    throw new SessionError('Session not found', 'NOT_FOUND');
+    throw new SessionError("Session not found", "NOT_FOUND");
   }
 
   if (session.phase === SessionPhase.ENDED) {
-    throw new SessionError('Session has ended', 'ENDED');
+    throw new SessionError("Session has ended", "ENDED");
   }
 
   const existingPlayer = await db.sessionPlayer.findUnique({
@@ -187,8 +189,8 @@ export async function joinSession(
 
   if (session.phase === SessionPhase.ACTIVE) {
     throw new SessionError(
-      'Game already started. Only players who joined before start can reconnect with their name.',
-      'NAME_NOT_IN_SESSION',
+      "Game already started. Only players who joined before start can reconnect with their name.",
+      "NAME_NOT_IN_SESSION",
     );
   }
 
@@ -201,7 +203,7 @@ export async function joinSession(
   });
 
   const payload: RoomEventPayload = {
-    type: 'player_joined',
+    type: "player_joined",
     player: {
       id: player.id,
       displayName: player.displayName,
@@ -227,7 +229,7 @@ export async function getHostActiveLiveSessions(hostId: string) {
       hostId,
       phase: { in: [SessionPhase.LOBBY, SessionPhase.ACTIVE] },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
     include: {
       game: {
         select: {
@@ -249,22 +251,25 @@ export async function getLiveSessionForHost(sessionId: string, hostId: string) {
   });
 
   if (!session) {
-    throw new SessionError('Session not found', 'NOT_FOUND');
+    throw new SessionError("Session not found", "NOT_FOUND");
   }
 
   if (session.hostId !== hostId) {
-    throw new SessionError('Forbidden', 'FORBIDDEN');
+    throw new SessionError("Forbidden", "FORBIDDEN");
   }
 
   return session;
 }
 
-export async function getSessionScenesForHost(sessionId: string, hostId: string) {
+export async function getSessionScenesForHost(
+  sessionId: string,
+  hostId: string,
+) {
   const session = await getLiveSessionForHost(sessionId, hostId);
 
   return db.gameScene.findMany({
     where: { gameId: session.gameId },
-    orderBy: { order: 'asc' },
+    orderBy: { order: "asc" },
     select: {
       id: true,
       order: true,
@@ -275,7 +280,7 @@ export async function getSessionScenesForHost(sessionId: string, hostId: string)
       hostOnlyNotes: true,
       imageUrl: true,
       tasks: {
-        orderBy: { order: 'asc' },
+        orderBy: { order: "asc" },
         select: {
           id: true,
           order: true,
@@ -284,7 +289,7 @@ export async function getSessionScenesForHost(sessionId: string, hostId: string)
         },
       },
       illustrations: {
-        orderBy: { order: 'asc' },
+        orderBy: { order: "asc" },
         select: {
           id: true,
           order: true,
@@ -328,22 +333,24 @@ export async function appendSessionEvent(
   });
 }
 
-export async function getRoomState(sessionId: string): Promise<RoomState | null> {
+export async function getRoomState(
+  sessionId: string,
+): Promise<RoomState | null> {
   const session = await db.liveSession.findUnique({
     where: { id: sessionId },
     include: {
       game: {
         include: {
-          heroSlots: { orderBy: { order: 'asc' } },
-          traits: { orderBy: { order: 'asc' } },
+          heroSlots: { orderBy: { order: "asc" } },
+          traits: { orderBy: { order: "asc" } },
         },
       },
       players: {
-        orderBy: { joinedAt: 'asc' },
+        orderBy: { joinedAt: "asc" },
         include: { heroSlot: true },
       },
       events: {
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: "asc" },
       },
     },
   });
@@ -380,23 +387,61 @@ export async function getRoomState(sessionId: string): Promise<RoomState | null>
     session.phase,
     players,
     events,
+    session.game.titleRu,
+    session.game.titleEn,
   );
 
   return { ...state, lobby };
 }
 
 export async function startLiveSession(sessionId: string, hostId: string) {
-  await getLiveSessionForHost(sessionId, hostId);
+  const session = await getLiveSessionForHost(sessionId, hostId);
 
-  await db.liveSession.update({
-    where: { id: sessionId },
-    data: {
-      phase: SessionPhase.ACTIVE,
-      startedAt: new Date(),
+  const players = await db.sessionPlayer.findMany({
+    where: { sessionId },
+    select: { id: true, heroSlotId: true, characterJson: true },
+  });
+
+  const game = await db.gameTemplate.findUnique({
+    where: { id: session.gameId },
+    select: {
+      traits: { select: { id: true }, orderBy: { order: "asc" } },
+      traitPointsPerStat: true,
     },
   });
 
-  return appendSessionEvent(sessionId, { type: 'session_started' });
+  const traitIds = game?.traits.map((t) => t.id) ?? [];
+
+  await db.$transaction(async (tx) => {
+    for (const player of players) {
+      if (!player.heroSlotId) {
+        await tx.sessionPlayer.delete({ where: { id: player.id } });
+        continue;
+      }
+
+      const character = parseStoredCharacterJson(player.characterJson);
+      if (!character.isReady) {
+        const rolledTraits =
+          character.rolledTraits && character.rolledTraits.length > 0
+            ? character.rolledTraits
+            : traitIds.length > 0
+              ? generateTraitRoll(traitIds, game?.traitPointsPerStat ?? 30)
+              : [];
+
+        await tx.sessionPlayer.update({
+          where: { id: player.id },
+          data: { characterJson: { rolledTraits, isReady: true } },
+        });
+      }
+    }
+
+    await tx.liveSession.update({
+      where: { id: sessionId },
+      data: { phase: SessionPhase.ACTIVE, startedAt: new Date() },
+    });
+  });
+
+  return appendSessionEvent(sessionId, { type: "session_started" });
 }
 
 export async function endLiveSession(sessionId: string, hostId: string) {
@@ -415,5 +460,5 @@ export async function endLiveSession(sessionId: string, hostId: string) {
     await tx.sessionPlayer.deleteMany({ where: { sessionId } });
   });
 
-  return { id: 'ended', sessionId };
+  return { id: "ended", sessionId };
 }

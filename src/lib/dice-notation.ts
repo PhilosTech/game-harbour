@@ -3,5 +3,5 @@ export function buildPredeterminedDiceNotation(
   sides: number,
   values: number[],
 ): string {
-  return `${count}d${sides}@${values.join(',')}`;
+  return `${count}d${sides}@${values.join(",")}`;
 }

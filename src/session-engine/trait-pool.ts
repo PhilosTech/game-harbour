@@ -1,4 +1,4 @@
-import type { RolledTrait } from '@/types/character';
+import type { RolledTrait } from "@/types/character";
 
 function randomInt(maxInclusive: number): number {
   return Math.floor(Math.random() * (maxInclusive + 1));

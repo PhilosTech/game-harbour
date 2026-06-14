@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 type DuplicateGameButtonProps = {
   gameId: string;
@@ -13,7 +13,7 @@ export function DuplicateGameButton({
   gameId,
   redirectToEdit = true,
 }: DuplicateGameButtonProps) {
-  const t = useTranslations('bridge');
+  const t = useTranslations("bridge");
   const locale = useLocale();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -24,14 +24,14 @@ export function DuplicateGameButton({
     setError(null);
 
     try {
-      const response = await fetch('/api/games/duplicate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/games/duplicate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ gameId }),
       });
 
       if (!response.ok) {
-        setError(t('duplicateGameFailed'));
+        setError(t("duplicateGameFailed"));
         return;
       }
 
@@ -44,7 +44,7 @@ export function DuplicateGameButton({
 
       router.refresh();
     } catch {
-      setError(t('duplicateGameFailed'));
+      setError(t("duplicateGameFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -56,10 +56,10 @@ export function DuplicateGameButton({
         type="button"
         onClick={onDuplicate}
         disabled={isLoading}
-        aria-label={t('duplicateGame')}
+        aria-label={t("duplicateGame")}
         className="min-h-11 rounded-xl border border-border px-4 text-sm hover:border-accent disabled:opacity-60"
       >
-        {isLoading ? '...' : t('duplicateGame')}
+        {isLoading ? "..." : t("duplicateGame")}
       </button>
       {error ? (
         <span className="text-xs text-red-400" role="alert">

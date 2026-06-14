@@ -8,7 +8,7 @@ export function rollD20(): number {
 
 export function rollDie(sides: number): number {
   if (!Number.isInteger(sides) || sides < 2) {
-    throw new Error('Die must have at least 2 sides');
+    throw new Error("Die must have at least 2 sides");
   }
   return Math.floor(Math.random() * sides) + 1;
 }
@@ -39,7 +39,13 @@ export function resolveRoll(
   natural: number,
   modifier: number,
   dc: number,
-): { natural: number; modifier: number; total: number; dc: number; success: boolean } {
+): {
+  natural: number;
+  modifier: number;
+  total: number;
+  dc: number;
+  success: boolean;
+} {
   const total = natural + modifier;
   return {
     natural,
