@@ -141,6 +141,6 @@ Players install from browser; deep link `/play/[code]` opens join flow.
 - [x] Socket.io server (`realtime/server.ts`) + client hook (`use-room-socket`)
 - [x] Staged scene events (`scene_started`, text/task visibility, `scene_ended`)
 - [x] Host-only events filtered on player clients
-- [ ] Two phones + host laptop stay in sync (manual QA)
-- [ ] Dice math covered by tests
-- [ ] Reconnect within 30s restores room state
+- [x] Two phones + host laptop stay in sync (manual QA)
+- [x] Dice math covered by tests
+- [x] Reconnect within 30s restores room state
