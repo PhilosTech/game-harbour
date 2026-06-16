@@ -649,7 +649,7 @@ export function buildAiScenePrompt(
 
 Верни **только** один валидный JSON-объект. Без markdown, без текста до или после.
 
-> **ВАЖНО:** пример ниже показывает **только структуру JSON**. Все плейсхолдеры в квадратных скобках — это заглушки формата. Имена персонажей, локации, события и детали сеттинга ты **обязан брать исключительно из описания игры выше**. Никакого Амазонки, джунглей или других игр — только то, что указал ведущий. Количество tasks в примере — это иллюстрация структуры, не фиксированное число. **Количество tasks в каждой сцене = N-1 из раздела «Игроки и герои» (минимум именных tasks на сцену).**
+> **ВАЖНО:** пример ниже показывает **только структуру JSON**. Все плейсхолдеры в квадратных скобках — это заглушки формата. Имена персонажей, локации, события и детали сеттинга ты **обязан брать исключительно из описания игры выше**. Количество tasks в примере — это иллюстрация структуры, не фиксированное число. **Количество tasks в каждой сцене = N-1 из раздела «Игроки и герои» (минимум именных tasks на сцену).**
 
 \`\`\`json
 ${example}
@@ -665,7 +665,7 @@ ${example}
 
 Return **only** one valid JSON object. No markdown, no text outside.
 
-> **IMPORTANT:** the example below shows **only the JSON structure**. All placeholders in square brackets are format stubs. Character names, locations, events, and setting details **must come exclusively from the game description above**. Do not copy or invent settings — use only what the host provided. The example has 5 tasks per scene — that is N-1 for 6 heroes. **Adjust task count to the actual N-1 from the "Players and heroes" section.**
+> **IMPORTANT:** the example below shows **only the JSON structure**. All placeholders in square brackets are format stubs. Character names, locations, events, and setting details **must come exclusively from the game description above**. The example has 5 tasks per scene — that is N-1 for 6 heroes. **Adjust task count to the actual N-1 from the "Players and heroes" section.**
 
 \`\`\`json
 ${example}
