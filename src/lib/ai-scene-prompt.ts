@@ -277,8 +277,8 @@ ${heroStrengthLine}
 Короткие **подписи для поиска картинки** ведущим (как имя файла или запрос в стоке), **не** промпт для генерации.
 
 Правила:
-- **2–6 слов**, до ~50 символов: «Порт Манауса», «Река Амазонки», «Дикая Амазонка», «NPC Руис»
-- Название **места, предмета или NPC** — без деталей («влажная трава», «туман на рассвете», «зелёные лианы»)
+- **2–6 слов**, до ~50 символов: «[Место из игры]», «[Предмет из игры]», «NPC [Имя]»
+- Название **места, предмета или NPC из сеттинга этой игры** — без визуальных деталей («влажная трава», «туман на рассвете»)
 - hintRu и hintEn — одна и та же суть, короткая подпись на каждом языке
 - 0–2 на сцену, только если картинка реально нужна
 - Фон сцены ведущий загружает отдельно; illustrationHints — доп. картинки внутри сцены
@@ -333,8 +333,8 @@ See **Drama, NPCs, and tasks** below — avoid bland checklist chores.
 Short **search/file labels** for the host (stock photo query or filename), **not** an image-generation prompt.
 
 Rules:
-- **2–6 words**, ~50 chars max: "Manaus port", "Amazon river", "Wild Amazon", "NPC Ruiz"
-- Name the **place, object, or NPC** — no visual prose (no "wet grass at dawn", "green vines")
+- **2–6 words**, ~50 chars max: "[Place from game]", "[Object from game]", "NPC [Name]"
+- Name the **place, object, or NPC from this game's setting** — no visual prose (no "wet grass at dawn", "green vines")
 - hintRu and hintEn — same idea, short label in each language
 - 0–2 per scene when useful
 - Scene background is uploaded separately; illustrationHints are extra in-scene images
@@ -348,8 +348,8 @@ function buildDramaAndTasksRules(isRu: boolean): string {
 Игра должна **оживать за столом**: сюрпризы, NPC, реакции, а не «проверьте аптечку» и «попробуйте воду на вкус».
 
 ### NPC и мир
-- Введи **2–4 именованных NPC** за партию (торговец, конкурент, проводник, раненый старатель) — они говорят, лгут, помогают, мешают
-- В **contentRu/contentEn** показывай действие: шорох в кустах, свист с берега, внезапный голос, сбой мотора, ливень
+- Введи **2–4 именованных NPC** за партию — роли берутся из сеттинга игры (союзник, противник, информатор, наблюдатель и т.п.) — они говорят, лгут, помогают, мешают
+- В **contentRu/contentEn** показывай действие: неожиданный звук, сигнал тревоги, внезапный голос, сбой техники, стихия
 - В **hostOnlyNotes** — как NPC себя ведёт, что скрывает, чем давит на слабость героя
 
 ### Кубик = сюрприз (особенно d4-d8)
@@ -365,14 +365,14 @@ function buildDramaAndTasksRules(isRu: boolean): string {
 - До ~120 знаков каждый, **императив с выбором или эмоцией**
 - **Не дублируй** contentRu и не пиши канцелярию
 
-**Хорошие tasks:**
-- «Проводник: продолжаете маршрут или меняете план — скажите, почему»
-- «Журналист: задайте NPC вопрос, который его смутит — и смотрите на реакцию»
-- «Врач: решите, тратить ли последний ресурс на раненого, рискуя остальными»
+**Хорошие tasks (принцип, не копировать):**
+- «[Роль]: продолжаете план или меняете решение — скажите, почему»
+- «[Роль]: задайте NPC вопрос, который его смутит — и смотрите на реакцию»
+- «[Роль]: решите, тратить ли последний ресурс сейчас, рискуя остальными»
 - «Кто-то из группы: скажите, что сделаете первым, если ситуация выйдет из-под контроля»
 
 **Плохие tasks (избегай):**
-- «Проверьте аптечку», «Попробуйте воду», «Осмотрите развилку», «Распределите роли»
+- Любая рутина без ставки: «Осмотрите [объект]», «Проверьте [снаряжение]», «Распределите роли»
 - Любая рутина без ставки, страха, спора или сюрприза
 
 ### Баланс
@@ -399,8 +399,8 @@ function buildDramaAndTasksRules(isRu: boolean): string {
 The table should feel **alive**: surprises, NPCs, reactions — not "check the med kit" or "taste the water".
 
 ### NPCs and the world
-- Introduce **2–4 named NPCs** per session (trader, rival, guide, wounded prospector) — they talk, lie, help, obstruct
-- In **contentRu/contentEn**, show action: rustling bushes, a whistle from the bank, a sudden voice, engine failure, rain
+- Introduce **2–4 named NPCs** per session — roles come from the game's setting (ally, antagonist, informant, observer, etc.) — they talk, lie, help, obstruct
+- In **contentRu/contentEn**, show action: an unexpected sound, an alarm signal, a sudden voice, equipment failure, an environmental threat
 - In **hostOnlyNotes**, note how each NPC behaves, what they hide, how they press a hero flaw
 
 ### Dice = surprise (especially d4-d8)
@@ -416,14 +416,14 @@ Not game over, but tension and dialogue shift.
 - ~120 chars each, **imperative with a choice or emotion**
 - Do **not** repeat scene body text or write admin chores
 
-**Good tasks:**
-- "Guide: keep the route or change the plan — say why"
-- "Journalist: ask the NPC a question that will make them uncomfortable — watch the reaction"
-- "Doctor: decide whether to spend the last resource on the injured, risking the rest"
+**Good tasks (principle, do not copy):**
+- "[Role]: keep the plan or change the decision — say why"
+- "[Role]: ask the NPC a question that will make them uncomfortable — watch the reaction"
+- "[Role]: decide whether to spend the last resource now, risking the others"
 - "Someone in the group: say what you do first if the situation goes out of control"
 
 **Bad tasks (avoid):**
-- "Check the med kit", "Taste the water", "Inspect the fork", "Assign roles"
+- Any routine with no stake: "Inspect [object]", "Check [equipment]", "Assign roles"
 - Any routine with no stake, fear, argument, or surprise
 
 ### Balance
@@ -458,16 +458,16 @@ function buildWritingRules(isRu: boolean): string {
 
 ### Согласованность сюжета
 - Каждый NPC из masterNotes должен появиться минимум в **2 сценах** (введение + развитие или развязка)
-- Сюжетные нити (дневник Брауна, предательство спонсора, соперник и т.д.) должны **проходить через все три акта** — не обрываться после одной сцены
+- Сюжетные нити (предательство, скрытый мотив, соперничество и т.д.) должны **проходить через все три акта** — не обрываться после одной сцены
 - Если в акте 1 появился NPC — в акте 2 или 3 он должен **сделать что-то важное**, не просто упоминаться
 - Ресурсы из masterNotes должны **ощущаться**: если провизия кончается — сцена должна это показывать
 
 ### Черты героев и характеристики
 - В hostOnlyNotes каждой сцены **явно укажи**, чья сильная сторона или слабость здесь работает
 - Слабость героя — не просто ярлык: покажи **момент**, когда она создаёт реальную проблему или выбор
-- Пример: «Импульсивность Врача: если он действует первым без проверки — потратит одно использование аптечки»
+- Пример: «[Слабость героя]: если он действует первым без проверки — [конкретное последствие из сеттинга]»
 - **Общие характеристики:** за партию должна быть задействована **минимум половина** из заданных характеристик — каждая хотя бы в одной CHECK или task
-- В tasks добавляй отсылки к характеристикам: «Тот у кого выше Выносливость…», «Участник с лучшим Расследованием…», «Кто готов потратить Атлетику…»
+- В tasks добавляй отсылки к характеристикам: «Тот у кого выше [характеристика]…», «Участник с лучшим [характеристика]…», «Кто готов потратить [характеристика]…»
 
 ### Препятствия и конфликты
 - Препятствие в сцене — не всегда NPC: **погода, рельеф, нехватка ресурса, моральный выбор, время**
@@ -486,16 +486,16 @@ function buildWritingRules(isRu: boolean): string {
 
 ### Story consistency
 - Every NPC from masterNotes must appear in at least **2 scenes** (introduction + development or resolution)
-- Plot threads (Brown's diary, sponsor betrayal, rival, etc.) must **run through all three acts** — no thread dropped after one scene
+- Plot threads (betrayal, hidden motive, rivalry, etc.) must **run through all three acts** — no thread dropped after one scene
 - An NPC introduced in act 1 must **do something significant** in act 2 or 3, not just be mentioned
 - Resources from masterNotes must **feel real**: if food is running low, a scene should show it
 
 ### Hero traits and shared traits
 - In each scene's hostOnlyNotes, **explicitly name** whose strength or flaw is active here
 - A hero's flaw is not just a label: show the **moment** it creates a real problem or choice
-- Example: "Doctor's Impulsiveness: if they act first without a check — spend one med kit use"
+- Example: "[Hero's flaw]: if they act first without a check — [specific consequence from the setting]"
 - **Shared traits:** across the session, at least **half of the listed traits** must be used — each in at least one CHECK or task
-- In tasks, reference traits by name: "Whoever has higher Endurance…", "The one with the best Investigation…", "Who is willing to spend Athletics…"
+- In tasks, reference traits by name: "Whoever has higher [trait]…", "The one with the best [trait]…", "Who is willing to spend [trait]…"
 
 ### Obstacles and conflict
 - An obstacle is not always an NPC: **weather, terrain, scarce resources, moral choice, time pressure**
@@ -561,7 +561,7 @@ function buildSelfCheckSection(
 - [ ] Все сцены имеют contentRu **и** contentEn (не пустые)
 ${heroChecks}
 - [ ] tasks живые (выбор, NPC, реакция) — нет рутины «проверьте аптечку»
-- [ ] ≥1 CHECK с таблицей сюрприза (d4–d8/d6: кусты, зверь, NPC)
+- [ ] ≥1 CHECK с таблицей сюрприза (d4–d8/d6: исходы из сеттинга этой игры)
 - [ ] tasks не копируют текст сцены
 - [ ] hostOnlyNotes каждой сцены содержит: тайны/контекст + подсказки если застряли + последствия вперёд (+ механика для CHECK)
 - [ ] В 1–3 ключевых сценах есть подсказка [Таблица] для Развилки и Концовки
@@ -586,7 +586,7 @@ Verify each item. Fix issues, then output JSON.
 - [ ] All scenes have both contentRu and contentEn (non-empty)
 ${heroChecks}
 - [ ] tasks are vivid (choice, NPC, reaction) — no "check the med kit" chores
-- [ ] ≥1 CHECK has a surprise table (d4–d8/d6: bushes, animal, NPC)
+- [ ] ≥1 CHECK has a surprise table (d4–d8/d6: outcomes from this game's setting)
 - [ ] tasks do not repeat scene body
 - [ ] hostOnlyNotes for each scene contains: secrets/context + hints if stuck + forward consequences (+ mechanics for CHECK)
 - [ ] 1–3 key scenes have a [Table] hint for Branching and Ending
