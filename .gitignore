@@ -49,3 +49,6 @@ prisma/*.db-journal
 
 # local game content (not tracked)
 /game-content/
+
+# claude code local settings (machine-specific)
+.claude/settings.local.json
