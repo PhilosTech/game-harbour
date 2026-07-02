@@ -27,7 +27,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <NextIntlClientProvider messages={messages}>
       <LocaleHtmlLang />
-      <AppLocaleBar />
+      <AppLocaleBar locale={locale} />
       {children}
     </NextIntlClientProvider>
   );

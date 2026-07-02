@@ -40,7 +40,7 @@ export default async function BridgePage({ params }: Props) {
     session.user.name ?? session.user.username ?? t("defaultHostName");
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-5xl flex-col gap-8 px-4 py-8">
+    <main className="mx-auto flex min-h-dvh max-w-5xl flex-col gap-8 px-4 pb-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-2">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-accent">
@@ -63,12 +63,6 @@ export default async function BridgePage({ params }: Props) {
           className="inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-5 text-sm font-semibold text-background hover:bg-accent-hover"
         >
           {t("createGame")}
-        </Link>
-        <Link
-          href={`/${locale}`}
-          className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border px-5 text-sm"
-        >
-          Game Harbour
         </Link>
       </div>
 

@@ -9,14 +9,10 @@ type Props = {
 export default async function HarbourPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations("harbour");
-  const tc = await getTranslations("common");
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-8 px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(2.75rem,calc(env(safe-area-inset-top)+2.75rem))]">
-      <header className="space-y-2 pr-28">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-accent">
-          {tc("appName")}
-        </p>
+    <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-8 px-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
+      <header className="space-y-2">
         <h1 className="text-3xl font-bold leading-tight">{t("heroTitle")}</h1>
         <p className="text-sm leading-relaxed text-muted">{t("tagline")}</p>
       </header>

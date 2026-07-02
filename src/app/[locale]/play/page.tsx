@@ -1,13 +1,7 @@
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { PlayJoinForm } from "@/components/player/play-join-form";
 
-type Props = {
-  params: Promise<{ locale: string }>;
-};
-
-export default async function PlayPage({ params }: Props) {
-  const { locale } = await params;
+export default async function PlayPage() {
   const t = await getTranslations("play");
 
   return (
@@ -17,12 +11,6 @@ export default async function PlayPage({ params }: Props) {
         <p className="text-sm text-muted">{t("enterCode")}</p>
       </header>
       <PlayJoinForm />
-      <Link
-        href={`/${locale}`}
-        className="text-center text-sm text-muted underline"
-      >
-        Game Harbour
-      </Link>
     </main>
   );
 }
