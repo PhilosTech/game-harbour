@@ -4,7 +4,7 @@ import { buildPredeterminedDiceNotation } from "@/lib/dice-notation";
 import type { ActiveDiceRoll } from "@/session-engine/room-events";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const DiceRollSceneClient = dynamic(
   () =>
@@ -13,6 +13,8 @@ const DiceRollSceneClient = dynamic(
     ),
   { ssr: false },
 );
+
+const MAX_STAGE_SIZE = 600;
 
 type DiceRollOverlayProps = {
   roll: ActiveDiceRoll;
@@ -27,6 +29,27 @@ export function DiceRollOverlay({
 }: DiceRollOverlayProps) {
   const t = useTranslations("dice");
   const [isRolling, setIsRolling] = useState(true);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [stageSize, setStageSize] = useState(MAX_STAGE_SIZE);
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) {
+        return;
+      }
+      const { width, height } = entry.contentRect;
+      setStageSize(Math.min(MAX_STAGE_SIZE, width, height));
+    });
+
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, []);
 
   const handleComplete = useCallback(() => {
     setIsRolling(false);
@@ -48,12 +71,13 @@ export function DiceRollOverlay({
       </div>
 
       <div
-        className="relative min-h-0 flex-1"
+        ref={stageRef}
+        className="relative flex min-h-0 flex-1 items-center justify-center"
         role="dialog"
         aria-modal="true"
         aria-labelledby="dice-roll-title"
       >
-        <div className="mx-auto h-full w-full max-w-sm">
+        <div style={{ width: stageSize, height: stageSize }}>
           <DiceRollSceneClient
             rollId={roll.id}
             notation={buildPredeterminedDiceNotation(
