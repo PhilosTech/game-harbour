@@ -12,7 +12,7 @@ export default async function HarbourPage({ params }: Props) {
   const tc = await getTranslations("common");
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-8 px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(2rem,env(safe-area-inset-top))]">
+    <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-8 px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(2.75rem,calc(env(safe-area-inset-top)+2.75rem))]">
       <header className="space-y-2 pr-28">
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-accent">
           {tc("appName")}
