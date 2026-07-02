@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { AccountButton } from "@/components/bridge/account-button";
 import { DuplicateGameButton } from "@/components/bridge/duplicate-game-button";
 import { PublishGameButton } from "@/components/bridge/publish-game-button";
 import { ReturnToSessionLink } from "@/components/bridge/return-to-session-link";
@@ -50,7 +51,10 @@ export default async function BridgePage({ params }: Props) {
           </h1>
           <p className="text-muted">{t("subtitle")}</p>
         </div>
-        <SignOutButton />
+        <div className="flex items-start gap-2">
+          <AccountButton username={session.user.username ?? hostLabel} />
+          <SignOutButton />
+        </div>
       </header>
 
       <div className="flex flex-col gap-3 sm:flex-row">

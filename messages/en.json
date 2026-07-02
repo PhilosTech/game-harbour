@@ -228,7 +228,11 @@
     "usernameChecking": "Checking username...",
     "usernameAvailable": "Username is available",
     "usernameTaken": "This username is already taken",
-    "usernameInvalid": "Username: 3-32 chars, letters, numbers, _ and -"
+    "usernameInvalid": "Username: 3-32 chars, letters, numbers, _ and -",
+    "account": "Account",
+    "accountModalTitle": "Your account",
+    "accountModalHint": "Sign in with this username. We cannot show your password - it is stored encrypted. Use \"Forgot password\" if needed.",
+    "close": "Close"
   },
   "play": {
     "title": "Join session",
