@@ -160,9 +160,7 @@ export function SessionRoom({
           </p>
         ) : null}
 
-        {activeDiceRoll ? (
-          <DiceRollOverlay roll={activeDiceRoll} isHost={false} />
-        ) : null}
+        <DiceRollOverlay activeRoll={activeDiceRoll} isHost={false} />
 
         {openTask ? (
           <SceneTaskModal

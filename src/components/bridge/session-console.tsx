@@ -234,15 +234,13 @@ export function SessionConsole({
         onConfirm={onStart}
       />
 
-      {activeDiceRoll ? (
-        <DiceRollOverlay
-          roll={activeDiceRoll}
-          isHost
-          onDismiss={() => {
-            void dismissDiceRoll();
-          }}
-        />
-      ) : null}
+      <DiceRollOverlay
+        activeRoll={activeDiceRoll}
+        isHost
+        onDismiss={() => {
+          void dismissDiceRoll();
+        }}
+      />
     </div>
   );
 }

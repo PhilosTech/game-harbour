@@ -17,20 +17,21 @@ const DiceRollSceneClient = dynamic(
 const MAX_STAGE_SIZE = 600;
 
 type DiceRollOverlayProps = {
-  roll: ActiveDiceRoll;
+  activeRoll: ActiveDiceRoll | null;
   isHost: boolean;
   onDismiss?: () => void;
 };
 
 export function DiceRollOverlay({
-  roll,
+  activeRoll,
   isHost,
   onDismiss,
 }: DiceRollOverlayProps) {
   const t = useTranslations("dice");
-  const [isRolling, setIsRolling] = useState(true);
+  const [isRolling, setIsRolling] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const [stageSize, setStageSize] = useState(MAX_STAGE_SIZE);
+  const lastSeenRollIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -51,20 +52,41 @@ export function DiceRollOverlay({
     return () => observer.disconnect();
   }, []);
 
-  const handleComplete = useCallback(() => {
-    setIsRolling(false);
+  useEffect(() => {
+    if (activeRoll && activeRoll.id !== lastSeenRollIdRef.current) {
+      lastSeenRollIdRef.current = activeRoll.id;
+      setIsRolling(true);
+    }
+  }, [activeRoll]);
+
+  const handleComplete = useCallback((rollId: string) => {
+    setIsRolling((current) => {
+      if (lastSeenRollIdRef.current !== rollId) {
+        return current;
+      }
+      return false;
+    });
   }, []);
 
-  const rollerLabel =
-    roll.rollerRole === "host" ? t("hostRoller") : roll.rollerName;
+  const rollerLabel = activeRoll
+    ? activeRoll.rollerRole === "host"
+      ? t("hostRoller")
+      : activeRoll.rollerName
+    : "";
 
   return (
-    <div className="fixed inset-0 z-[70] flex flex-col bg-black/85 backdrop-blur-sm">
+    <div
+      className={`fixed inset-0 z-[70] flex flex-col bg-black/85 backdrop-blur-sm ${
+        activeRoll ? "" : "invisible pointer-events-none"
+      }`}
+    >
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-black/70 to-transparent px-4 pb-8 pt-6 text-center">
         <p id="dice-roll-title" className="text-xs text-white/70">
-          {t("rollBy", { name: rollerLabel })}
+          {activeRoll ? t("rollBy", { name: rollerLabel }) : ""}
         </p>
-        <p className="mt-1 text-sm font-medium text-accent">{roll.label}</p>
+        <p className="mt-1 text-sm font-medium text-accent">
+          {activeRoll?.label ?? ""}
+        </p>
         {isRolling ? (
           <p className="mt-2 text-sm text-white/60">{t("rolling")}</p>
         ) : null}
@@ -79,30 +101,34 @@ export function DiceRollOverlay({
       >
         <div style={{ width: stageSize, height: stageSize }}>
           <DiceRollSceneClient
-            rollId={roll.id}
-            notation={buildPredeterminedDiceNotation(
-              roll.count,
-              roll.sides,
-              roll.values,
-            )}
+            rollId={activeRoll?.id ?? null}
+            notation={
+              activeRoll
+                ? buildPredeterminedDiceNotation(
+                    activeRoll.count,
+                    activeRoll.sides,
+                    activeRoll.values,
+                  )
+                : null
+            }
             onComplete={handleComplete}
           />
         </div>
       </div>
 
       <div className="relative z-10 shrink-0 border-t border-white/10 bg-card/95 px-4 py-4">
-        {!isRolling ? (
+        {activeRoll && !isRolling ? (
           <div className="mb-4 space-y-1 text-center">
-            {roll.count > 1 ? (
+            {activeRoll.count > 1 ? (
               <p className="text-sm text-muted">
-                {roll.values.join(" + ")} ={" "}
+                {activeRoll.values.join(" + ")} ={" "}
                 <span className="text-2xl font-semibold tabular-nums text-foreground">
-                  {roll.total}
+                  {activeRoll.total}
                 </span>
               </p>
             ) : (
               <p className="text-4xl font-bold tabular-nums text-foreground">
-                {roll.total}
+                {activeRoll.total}
               </p>
             )}
           </div>
@@ -110,7 +136,7 @@ export function DiceRollOverlay({
           <div className="mb-4 h-10" aria-hidden="true" />
         )}
 
-        {isHost && !isRolling && onDismiss ? (
+        {isHost && activeRoll && !isRolling && onDismiss ? (
           <button
             type="button"
             onClick={onDismiss}
@@ -118,7 +144,7 @@ export function DiceRollOverlay({
           >
             {t("dismissRoll")}
           </button>
-        ) : !isHost && !isRolling ? (
+        ) : !isHost && activeRoll && !isRolling ? (
           <p className="text-center text-xs text-muted">
             {t("waitingHostDismiss")}
           </p>

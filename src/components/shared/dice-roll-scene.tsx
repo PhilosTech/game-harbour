@@ -5,11 +5,16 @@ import { useTranslations } from "next-intl";
 
 const MIN_ROLL_MS = 3800;
 
+type DiceBoxInstance = {
+  initialize: () => Promise<void>;
+  roll: (notation: string) => Promise<unknown>;
+};
+
 type DiceRollSceneProps = {
-  rollId: string;
-  notation: string;
-  onComplete: () => void;
-  onError?: () => void;
+  rollId: string | null;
+  notation: string | null;
+  onComplete: (rollId: string) => void;
+  onError?: (rollId: string) => void;
 };
 
 async function waitForLayout(container: HTMLElement) {
@@ -31,6 +36,9 @@ export function DiceRollScene({
 }: DiceRollSceneProps) {
   const t = useTranslations("dice");
   const containerRef = useRef<HTMLDivElement>(null);
+  const boxRef = useRef<DiceBoxInstance | null>(null);
+  const readyRef = useRef<Promise<void> | null>(null);
+  const rolledIdsRef = useRef<Set<string>>(new Set());
   const onCompleteRef = useRef(onComplete);
   const onErrorRef = useRef(onError);
   const reactId = useId();
@@ -42,6 +50,10 @@ export function DiceRollScene({
     onErrorRef.current = onError;
   }, [onComplete, onError]);
 
+  // Create and initialize the dice box exactly once for the component's
+  // lifetime. The container stays mounted (hidden when idle) for the whole
+  // session so this expensive setup (new WebGL context, physics world,
+  // theme assets) never repeats between rolls.
   useEffect(() => {
     let cancelled = false;
     const container = containerRef.current;
@@ -50,13 +62,11 @@ export function DiceRollScene({
       return undefined;
     }
 
-    const sceneContainer = container;
     container.id = containerId;
-    setHasFailed(false);
 
-    async function runRoll() {
+    readyRef.current = (async () => {
       try {
-        await waitForLayout(sceneContainer);
+        await waitForLayout(container);
 
         const DiceBox = (await import("@3d-dice/dice-box-threejs")).default;
 
@@ -76,7 +86,7 @@ export function DiceRollScene({
           gravity_multiplier: 400,
           light_intensity: 0.85,
           iterationLimit: 1000,
-        });
+        }) as DiceBoxInstance;
 
         await box.initialize();
 
@@ -84,10 +94,41 @@ export function DiceRollScene({
           return;
         }
 
+        boxRef.current = box;
         window.dispatchEvent(new Event("resize"));
+      } catch (error) {
+        console.error("Dice roll scene failed to initialize", error);
+        if (!cancelled) {
+          setHasFailed(true);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [containerId]);
+
+  useEffect(() => {
+    if (!rollId || !notation || rolledIdsRef.current.has(rollId)) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    const currentRollId = rollId;
+    rolledIdsRef.current.add(currentRollId);
+
+    async function performRoll() {
+      try {
+        await readyRef.current;
+        const box = boxRef.current;
+
+        if (cancelled || !box) {
+          return;
+        }
 
         const rollStartedAt = Date.now();
-        await box.roll(notation);
+        await box.roll(notation as string);
 
         const elapsed = Date.now() - rollStartedAt;
         if (elapsed < MIN_ROLL_MS) {
@@ -97,25 +138,24 @@ export function DiceRollScene({
         }
 
         if (!cancelled) {
-          onCompleteRef.current();
+          onCompleteRef.current(currentRollId);
         }
       } catch (error) {
-        console.error("Dice roll scene failed", error);
+        console.error("Dice roll failed", error);
         if (!cancelled) {
           setHasFailed(true);
-          onErrorRef.current?.();
-          onCompleteRef.current();
+          onErrorRef.current?.(currentRollId);
+          onCompleteRef.current(currentRollId);
         }
       }
     }
 
-    void runRoll();
+    void performRoll();
 
     return () => {
       cancelled = true;
-      sceneContainer.replaceChildren();
     };
-  }, [containerId, notation, rollId]);
+  }, [rollId, notation]);
 
   if (hasFailed) {
     return (
