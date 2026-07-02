@@ -67,15 +67,15 @@ export function DiceRollScene({
         const box = new DiceBox(`#${containerId}`, {
           assetPath: "/assets/dice-threejs/",
           sounds: false,
-          shadows: true,
+          shadows: false,
           theme_surface: "green-felt",
           theme_colorset: "white",
           theme_material: "plastic",
           theme_texture: "",
-          strength: 1.6,
-          gravity_multiplier: 140,
+          strength: 1,
+          gravity_multiplier: 400,
           light_intensity: 0.85,
-          iterationLimit: 5000,
+          iterationLimit: 1000,
         });
 
         await box.initialize();

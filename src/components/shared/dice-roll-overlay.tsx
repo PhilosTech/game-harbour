@@ -53,15 +53,17 @@ export function DiceRollOverlay({
         aria-modal="true"
         aria-labelledby="dice-roll-title"
       >
-        <DiceRollSceneClient
-          rollId={roll.id}
-          notation={buildPredeterminedDiceNotation(
-            roll.count,
-            roll.sides,
-            roll.values,
-          )}
-          onComplete={handleComplete}
-        />
+        <div className="mx-auto h-full w-full max-w-sm">
+          <DiceRollSceneClient
+            rollId={roll.id}
+            notation={buildPredeterminedDiceNotation(
+              roll.count,
+              roll.sides,
+              roll.values,
+            )}
+            onComplete={handleComplete}
+          />
+        </div>
       </div>
 
       <div className="relative z-10 shrink-0 border-t border-white/10 bg-card/95 px-4 py-4">
