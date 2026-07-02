@@ -87,7 +87,7 @@ export function PlayerSceneStage({
         aria-hidden
       />
 
-      <header className="relative z-20 flex shrink-0 items-center justify-between gap-2 px-4 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
+      <header className="relative z-20 flex shrink-0 items-center justify-between gap-2 px-4 pb-2 pt-[max(1.375rem,calc(env(safe-area-inset-top)+0.625rem))]">
         <div
           className={`rounded-xl border px-3 py-1.5 ${hasBackground ? "border-white/20 bg-black/40 backdrop-blur-sm" : "border-border bg-card"}`}
         >
@@ -148,10 +148,10 @@ export function PlayerSceneStage({
             </p>
           ) : null}
 
-          <div className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto px-4 py-3">
+          <div className="flex min-h-0 flex-1 overflow-y-auto px-4 py-3">
             {hasText ? (
               <p
-                className={`whitespace-pre-wrap text-center text-lg leading-relaxed ${
+                className={`m-auto whitespace-pre-wrap text-center text-lg leading-relaxed ${
                   hasBackground
                     ? "rounded-2xl bg-black/45 px-4 py-4 text-white backdrop-blur-sm"
                     : "text-foreground"
@@ -161,7 +161,7 @@ export function PlayerSceneStage({
               </p>
             ) : showWaitingBeat ? (
               <p
-                className={`max-w-sm text-center text-lg leading-relaxed ${
+                className={`m-auto max-w-sm text-center text-lg leading-relaxed ${
                   hasBackground ? "text-white drop-shadow-md" : "text-foreground"
                 }`}
               >
